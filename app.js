@@ -1,17 +1,57 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
-var app = express();
+require('dotenv').config();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+const categoryRouter = require('./routes/categorization/categories')
+const subcategoryRouter = require('./routes/categorization/subcategories')
+const mongoose = require('mongoose');
+
+const app = express();
+
+mongoose.connect(
+  process.env.DATABASE_URL,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  }
+)
+.then(() => console.log('Connection to the database successful'));
+
+
+// Extended: https://swagger.io/specification/#infoObject
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      title: 'eMall API',
+      description: "Information for the eMall Web Application API",
+      contact: {
+        name: "Asser Hamad",
+      },
+      servers: [`http://localhost:${process.env.PORT}`]
+    }
+  },
+  apis: ["./routes/categorization/categories.js"]
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+
+
+//Routes
+app.use('/api/categories', categoryRouter);
+app.use('/api/subcategories', subcategoryRouter);
+
+app.use(
+  "/api",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocs)
+);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -19,8 +59,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

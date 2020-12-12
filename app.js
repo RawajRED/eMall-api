@@ -8,13 +8,16 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
 require('dotenv').config();
+const app = express();
+app.set('secret_key', process.env.SECRET_KEY);
 
+// Routers
 const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
+
+
+// Connect to database URL
 const mongoose = require('mongoose');
-
-const app = express();
-
 mongoose.connect(
   process.env.DATABASE_URL,
   {
@@ -25,7 +28,7 @@ mongoose.connect(
 .then(() => console.log('Connection to the database successful'));
 
 
-// Extended: https://swagger.io/specification/#infoObject
+// Setup SwaggerUI
 const swaggerOptions = {
   swaggerDefinition: {
     info: {

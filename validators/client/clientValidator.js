@@ -4,7 +4,7 @@ const Client = require("../../models/client/Client");
 const jwt = require('jsonwebtoken');
 
 // TODO: Add languages to validation message
-exports.validateClientRegister = [
+exports.validateClientRegisterEmail = [
         check('firstName')
             .exists().withMessage(errors.firstNameMissing).bail()
             .isString().withMessage('first name should be a string')

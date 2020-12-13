@@ -5,6 +5,7 @@ const clientValidators = require('../../validators/client/clientValidator');
 
 router.post('/', clientValidators.validateClientRegisterEmail, client.clientRegisterEmail);
 router.post('/login', clientValidators.validateClientLoginEmail, client.clientLoginEmail);
+router.put('/', clientValidators.clientIsLoggedIn, client.clientUpdateInfo);
 router.get('/cart/:_id', clientValidators.clientIsLoggedIn, client.getClientCart);
 router.get('/wishlist/:_id', clientValidators.clientIsLoggedIn, client.getClientWishlist);
 

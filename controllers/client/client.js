@@ -46,6 +46,15 @@ exports.clientLoginEmail = (req, res, next) => {
     .catch(err => res.status(400).json({message: 'Email not found'}))
 }
 
+exports.clientUpdateInfo = (req, res, next) => {
+    console.log(req.body.payload)
+    Client.updateOne({_id: req.body.payload.client._id}, req.body)
+    .then(resp => {
+        return res.status(200).json({status: 'success'})
+    })
+    .catch(err => res.status(404).json({message: err}))
+}
+
 exports.getClientCart = (req, res, next) => {
     Cart.findOne({clientId: req.params._id})
     .then(resp => resp.toJSON())

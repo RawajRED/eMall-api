@@ -1,6 +1,7 @@
 const { check, validationResult } = require('express-validator');
 const errors = require('./clientValidator.json');
 const Client = require("../../models/client/Client");
+const jwt = require('jsonwebtoken');
 
 // TODO: Add languages to validation message
 exports.validateClientRegister = [
@@ -35,4 +36,31 @@ exports.validateClientRegister = [
                 return res.status(422).json({errors: errors.array()});
             next();
             },
-    ]
+    ];
+
+exports.validateClientLoginEmail = [
+    check('email')
+        .exists().withMessage('Email should be provided').bail()
+        .isEmail()
+        .normalizeEmail(),
+    check('password')
+        .exists().withMessage("Password is missing").bail()
+        .isString()
+        .isLength({min: 8, max: 20}),
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            return res.status(422).json({errors: errors.array()});
+        next();
+    }
+]
+
+exports.clientIsLoggedIn = (req, res, next) => {
+    const token = req.get('token');
+    jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
+        if(err)
+            return res.status(500).json({message: err})
+        req.body.payload = decoded;
+        next();
+    });
+}

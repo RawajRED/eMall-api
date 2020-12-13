@@ -9,7 +9,7 @@ exports.clientRegisterEmail = (req, res, next) => {
     const saltRounds = 10;
     bcrypt.hash(password, saltRounds, (err, hash) => {
         if(err)
-            return res.status(500).json({message: 'Internal Server Error'})
+            next({status: 500, message: 'Internal Server Error'})
         const client = {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -22,7 +22,7 @@ exports.clientRegisterEmail = (req, res, next) => {
             delete resp[password];
             res.json(resp);
         })
-        .catch(err => res.status(400).json(err))
+        .catch(err =>next({status: 400, message: err}));
     })
 };
 
@@ -34,37 +34,42 @@ exports.clientLoginEmail = (req, res, next) => {
             bcrypt.compare(req.body.password, client.password, (err, result) => {
                 delete client.password;
                 if(err)
-                    return res.status(500).json({message: 'Internal Server Error, token unverifiable'});
+                    return next({status: 500, message: 'Internal Server Error, token unverifiable'});
                 if(result){
                     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
                     return res.json({client, token})
                 }
-                else return res.status(404).json({message: 'Incorrect Password'});
+                else next({message: 'Incorrect Password', status: 401});
             })
-        else return res.status(404).json({message: 'Email not found'})
+        else next({status: 404, message: 'Email not found'})
     })
-    .catch(err => res.status(400).json({message: 'Email not found'}))
+    .catch(err => next({status: 400, message: 'Email not found'}))
 }
 
 exports.clientUpdateInfo = (req, res, next) => {
-    console.log(req.body.payload)
+    const client = req.body.payload.client;
+    if(client._id !== req._id)
+        return next({status: 403, message: 'Incorrect ID'})
     Client.updateOne({_id: req.body.payload.client._id}, req.body)
     .then(resp => {
-        return res.status(200).json({status: 'success'})
+        return res.json({status: 'success'})
     })
-    .catch(err => res.status(404).json({message: err}))
+    .catch(err => next({status: 400, message: err}))
 }
 
 exports.getClientCart = (req, res, next) => {
+    const client = req.body.payload.client;
+    if(client._id !== req.params._id)
+        return next({status: 403, message: 'Incorrect ID'})
     Cart.findOne({clientId: req.params._id})
     .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
-    .catch(err => res.status(404).json({message: "Couldn't find cart"}))
+    .catch(err => next({status: 404, message: "Couldn't find cart"}))
 }
 
 exports.getClientWishlist = (req, res, next) => {
     Wishlist.findOne({clientId: req.params._id})
     .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
-    .catch(err => res.status(404).json({message: "Couldn't find wishlist"}))
+    .catch(err => next({status: 404, message: "Couldn't find wishlist"}))
 }

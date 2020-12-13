@@ -33,7 +33,7 @@ exports.validateClientRegisterEmail = [
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty())
-                return res.status(422).json({errors: errors.array()});
+                next({status: 422, errors: errors.array()});
             next();
             },
     ];
@@ -50,7 +50,7 @@ exports.validateClientLoginEmail = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())
-            return res.status(422).json({errors: errors.array()});
+            next({status: 422, errors: errors.array()});
         next();
     }
 ]
@@ -58,9 +58,12 @@ exports.validateClientLoginEmail = [
 exports.clientIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
-        if(err)
-            return res.status(500).json({message: err})
-        req.body.payload = decoded;
-        next();
+        if(err){
+            return next({status: 400, message: 'Invalid Token'})
+        }
+        else{
+            req.body.payload = decoded;
+            next();
+        }
     });
 }

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const Cart = require('./Cart');
+const Wishlist = require('./Wishlist');
 
 const clientSchema = new Schema({
     firstName: {
@@ -16,8 +18,7 @@ const clientSchema = new Schema({
     email: String,
     verified: Boolean,
     password: {
-        type: String,
-        required: true
+        type: String
     },
     orders: {
         type: [Schema.Types.ObjectId],
@@ -42,8 +43,25 @@ const clientSchema = new Schema({
     viewed: {
         type: [Schema.Types.ObjectId],
         ref: 'Product'
-    }
+    },
+    languagePref: Number
 });
+
+clientSchema.post('save', (doc) => {
+    Cart.create({clientId: doc._id})
+    .then(() =>
+        Wishlist.create({clientId: doc._id})
+    )
+});
+
+clientSchema.post('remove', (doc) => {
+    Cart.remove({clientId: doc._id})
+    .then(() =>
+        Wishlist.remove({clientId: doc._id})
+    )
+});
+
+
 
 const clientModel = mongoose.model('Client', clientSchema);
 

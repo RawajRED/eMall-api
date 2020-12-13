@@ -1,0 +1,15 @@
+{
+    "firstNameAlphanumeric": {
+        "en": "Name should not contain special characters",
+        "ar": ""
+    },
+    "firstNameLength": {
+        "en": "First name should be between 3 and 30 characters",
+        "ar": ""
+    },
+    "firstNameMissing": {
+        "en": "First name is missing",
+        "ar": ""
+    }
+
+}

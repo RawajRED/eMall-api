@@ -1,6 +1,7 @@
 
 const createError = require('http-errors');
 const express = require('express');
+const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
@@ -12,9 +13,12 @@ const app = express();
 app.set('secret_key', process.env.SECRET_KEY);
 
 // Routers
-const categoryRouter = require('./routes/categorization/categories')
-const subcategoryRouter = require('./routes/categorization/subcategories')
+const categoryRouter = require('./routes/categorization/categories');
+const subcategoryRouter = require('./routes/categorization/subcategories');
+const clientRouter = require('./routes/client/client');
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 
 // Connect to database URL
 const mongoose = require('mongoose');
@@ -49,6 +53,7 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 //Routes
 app.use('/api/categories', categoryRouter);
 app.use('/api/subcategories', subcategoryRouter);
+app.use('/api/client', clientRouter);
 
 app.use(
   "/api",

@@ -7,10 +7,12 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const cors = require('cors');
 
 require('dotenv').config();
 const app = express();
 app.set('secret_key', process.env.SECRET_KEY);
+app.use(cors());
 
 // Routers
 const categoryRouter = require('./routes/categorization/categories');

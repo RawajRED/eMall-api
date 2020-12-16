@@ -10,11 +10,15 @@ const adminSchema = new Schema({
         type: String,
         required: true
     },
+    username :{
+        type :String,
+        required : true,  
+    },
     mainAdmin :{
         type : Boolean,
         required :true,
         default :false
-    }
+    },
     password: {
         type: String,
         required: true

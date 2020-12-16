@@ -4,11 +4,9 @@ const Admin = require("../../models/admin/Admin");
 const jwt = require('jsonwebtoken');
 
 
-exports.validateClientLoginEmail = [
+exports.validateAdminLoginUsername = [
     check('username')
-        .exists().withMessage('Username should be provided').bail()
-        .isEmail()
-        .normalizeEmail(),
+        .exists().withMessage('Username should be provided').bail(),
     check('password')
         .exists().withMessage("Password is missing").bail()
         .isString()
@@ -21,9 +19,9 @@ exports.validateClientLoginEmail = [
     }
 ]
 
-exports.clientIsLoggedIn = (req, res, next) => {
+exports.adminIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
-    jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
+    jwt.verify(token, req.app.get('secret_key_admin'), (err, decoded) => {
         if(err){
             return next({status: 400, message: 'Invalid Token'})
         }

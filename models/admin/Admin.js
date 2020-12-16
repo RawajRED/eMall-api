@@ -12,7 +12,8 @@ const adminSchema = new Schema({
     },
     username :{
         type :String,
-        required : true,  
+        required : true,
+        unique : true  
     },
     mainAdmin :{
         type : Boolean,
@@ -23,13 +24,9 @@ const adminSchema = new Schema({
         type: String,
         required: true
     },
-    suspendedStores: {
-        type: [Schema.Types.ObjectId],
-        ref: 'Store'
-    },
-    suspendedClients: {
-        type: Schema.Types.ObjectId,
-        ref: 'Client'
+    Deleted: {
+        type : Boolean,
+        default : false
     }
 });
 

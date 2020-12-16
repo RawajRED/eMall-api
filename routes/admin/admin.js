@@ -5,6 +5,7 @@ const adminValidators = require('../../validators/admin/adminValidator');
 
 
 router.post('/login', adminValidators.validateAdminLoginUsername, admin.adminLoginUsername);
+router.post('/logout', admin.adminLogout);
 
 
 

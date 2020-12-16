@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+var bodyParser = require('body-parser')
+
 
 require('dotenv').config();
 const app = express();
@@ -45,12 +47,13 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}))
 
 //Routes
 app.use('/api/categories', categoryRouter);
 app.use('/api/subcategories', subcategoryRouter);
-app.use('/api/admin', adminRouter);
+app.use('/api/admin',adminRouter);
 
 app.use(
   "/api",
@@ -63,6 +66,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

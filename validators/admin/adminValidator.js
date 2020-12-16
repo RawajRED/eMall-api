@@ -14,14 +14,16 @@ exports.validateAdminLoginUsername = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())
-            next({status: 422, errors: errors.array()});
+            {
+                next({status: 422, errors: errors.array()});
+            }
         next();
     }
 ]
 
 exports.adminIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
-    jwt.verify(token, req.app.get('secret_key_admin'), (err, decoded) => {
+    jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
         if(err){
             return next({status: 400, message: 'Invalid Token'})
         }

@@ -89,6 +89,7 @@ router.get('/:id', categories.getCategory);
  *                                  type: string
  */
 router.post('/', categories.createCategory);
+router.put('/', categories.editCategory);
 router.delete('/', categories.deleteCategory);
 
 module.exports = router;

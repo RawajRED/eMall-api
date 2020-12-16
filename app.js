@@ -14,7 +14,7 @@ app.set('secret_key', process.env.SECRET_KEY);
 // Routers
 const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
-
+const adminRouter = require('./routes/admin/admin');
 
 // Connect to database URL
 
@@ -50,6 +50,7 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 //Routes
 app.use('/api/categories', categoryRouter);
 app.use('/api/subcategories', subcategoryRouter);
+app.use('/api/admin', adminRouter);
 
 app.use(
   "/api",

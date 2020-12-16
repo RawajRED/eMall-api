@@ -34,7 +34,7 @@ exports.clientLoginEmail = (req, res, next) => {
             bcrypt.compare(req.body.password, client.password, (err, result) => {
                 delete client.password;
                 if(err)
-                    return next({status: 500, message: 'Internal Server Error, token unverifiable'});
+                    return next({status: 500, message: 'Incorrect Password'});
                 if(result){
                     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
                     return res.json({client, token})

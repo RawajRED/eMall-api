@@ -46,7 +46,7 @@ exports.validateClientLoginEmail = [
     check('password')
         .exists().withMessage("Password is missing").bail()
         .isString()
-        .isLength({min: 8, max: 20}),
+        .isLength({min: 8, max: 20}).withMessage("Password is too short"),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())

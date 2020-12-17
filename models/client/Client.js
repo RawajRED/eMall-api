@@ -44,7 +44,7 @@ const clientSchema = new Schema({
         type: [Schema.Types.ObjectId],
         ref: 'Product'
     },    suspended:{
-        verified: Boolean,
+        type: Boolean,
         default :false
     },
     languagePref: Number

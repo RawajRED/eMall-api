@@ -26,6 +26,7 @@ const subcategorySchema = new Schema({
         type: String,
         required: true
     },
+    iconType: String,
     category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'

@@ -1,19 +1,26 @@
 
 const createError = require('http-errors');
 const express = require('express');
+const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const cors = require('cors');
 var bodyParser = require('body-parser')
 
 
 require('dotenv').config();
 const app = express();
 app.set('secret_key', process.env.SECRET_KEY);
+app.use(cors());
 
 // Routers
+const clientRouter = require('./routes/client/client');
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
 const adminRouter = require('./routes/admin/admin');
@@ -53,6 +60,7 @@ app.use(bodyParser.urlencoded({extended: false}))
 //Routes
 app.use('/api/categories', categoryRouter);
 app.use('/api/subcategories', subcategoryRouter);
+app.use('/api/client', clientRouter);
 app.use('/api/admin',adminRouter);
 
 app.use(
@@ -72,19 +80,19 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+app.use((req, res, next) => {
+  next({status: 404, message: 'Not Found'});
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next  ) => {
+  console.log('handling error')
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.json(err);
 });
 app.listen(process.env.PORT, function(){
   console.log('Server started in ',process.env.PORT);

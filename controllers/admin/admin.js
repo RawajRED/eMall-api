@@ -14,6 +14,10 @@ exports.adminLoginUsername = (req, res, next) => {
                 if(err)
                     return next({status: 500, message: 'Internal Server Error, token unverifiable'});
                 if(result){
+                    if(admin.deleted)
+                    {
+                        return res.json({status:401, message:'Your account has been deactivated'})
+                    }
                 const token = jwt.sign({admin},process.env.SECRET_KEY_ADMIN, { expiresIn: '1d'});
                 next(res.json({status :200, admin, token}))
                 }
@@ -66,7 +70,6 @@ exports.adminSuspendClient = (req, res, next) => {
     var id = req.query._id
     Client.findByIdAndUpdate(id, { suspended: "true" },function (err, docs) { 
         if (err){ 
-            console.log(err) 
             next({status: 400, message: err})
         } 
         else{ 
@@ -81,7 +84,6 @@ exports.adminUnSuspendClient = (req, res, next) => {
     var id = req.query._id
     Client.findByIdAndUpdate(id, { suspended: "false" },function (err, docs) { 
         if (err){ 
-            console.log(err) 
             next({status: 400, message: err})
         } 
         else{ 
@@ -89,6 +91,76 @@ exports.adminUnSuspendClient = (req, res, next) => {
         } 
     });     
 }
+exports.viewAdminList = (req, res, next) => {
+
+    Admin.find({mainAdmin:"false"}, function(err, admins) {
+        if(err)
+        {
+            res.json({status: 500, message: 'Internal Server Error'})
+        }
+        var adminsList = {};
+        admins.forEach(function(admin) {
+            adminsList[admin._id] = {"Username":admin.username,"Deactivated":admin.deleted};
+        });
+        res.send({status:200, message: "success", adminsList});  
+    });
+}
+
+
+exports.deactivateAdmin = (req, res, next) => {
+    if(req.query._id == undefined)
+        return next({status: 403, message: 'Incorrect ID'});
+    var id = req.query._id
+    Admin.findByIdAndUpdate(id, { deleted: "true" },function (err, docs) { 
+        if (err){ 
+            next({status: 400, message: err})
+        } 
+        else{            
+            return res.json({status: 'success'})
+        } 
+    });     
+}
+
+exports.activateAdmin = (req, res, next) => {
+    if(req.query._id == undefined)
+        return next({status: 403, message: 'Incorrect ID'});
+    var id = req.query._id
+    Admin.findByIdAndUpdate(id, { deleted: "false" },function (err, docs) { 
+        if (err){ 
+            next({status: 400, message: err})
+        } 
+        else{ 
+            return res.json({status: 'success'})
+        } 
+    });     
+}
+
+
+exports.clientStats = (req, res, next) => {
+
+    Client.find({}, function(err, clients) {
+        if(err)
+        {
+            res.json({status: 500, message: 'Internal Server Error'})
+        }
+        var suspendedClients = {};
+        var activeClients = 0 ;
+        var deletedAccounts =0 ;
+        clients.forEach(function(client) {
+            if(client.deleted === "true") delectedAccounts++;
+            else if(client.suspended ===true) suspendedClients[client._id] = {"email":client.email};
+            else activeClients++;
+        });
+        res.send({status:200, message: "success", "Active Clients":activeClients, "Deactivated Accounts":deletedAccounts,suspendedClients});  
+
+    });
+}
+
+
+
+
+
+
 
 
 

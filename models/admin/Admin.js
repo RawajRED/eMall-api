@@ -17,14 +17,13 @@ const adminSchema = new Schema({
     },
     mainAdmin :{
         type : Boolean,
-        required :true,
         default :false
     },
     password: {
         type: String,
         required: true
     },
-    Deleted: {
+    deleted: {
         type : Boolean,
         default : false
     }

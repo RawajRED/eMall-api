@@ -9,8 +9,10 @@ router.post('/logout', admin.adminLogout);
 router.post('/addAdmin',adminValidators.adminIsLoggedIn,adminValidators.validateadminIsTheMainAdmin,adminValidators.validateAdminInfo, admin.addAdmin );
 router.put('/suspendClient',adminValidators.adminIsLoggedIn,admin.adminSuspendClient)
 router.put('/unsuspendClient',adminValidators.adminIsLoggedIn,admin.adminUnSuspendClient)
-
-
+router.put('/deactivateAdmin',adminValidators.adminIsLoggedIn, adminValidators.validateadminIsTheMainAdmin,admin.deactivateAdmin)
+router.put('/activateAdmin',adminValidators.adminIsLoggedIn,adminValidators.validateadminIsTheMainAdmin ,admin.activateAdmin)
+router.get('/admins',adminValidators.adminIsLoggedIn,adminValidators.validateadminIsTheMainAdmin,admin.viewAdminList)
+router.get('/clientStats',adminValidators.adminIsLoggedIn,admin.clientStats)
 /////////// testing /////////
 router.post('/addAdminTesting',adminValidators.validateAdminInfoTest, admin.addAdminTest );
 

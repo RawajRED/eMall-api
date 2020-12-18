@@ -36,6 +36,10 @@ exports.clientLoginEmail = (req, res, next) => {
                 if(err)
                     return next({status: 500, message: 'Incorrect Password'});
                 if(result){
+                    if(client.suspended)
+                    {
+                        return res.json({status:401, message:'Your account has been suspended'})
+                    }
                     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
                     return res.json({client, token})
                 }

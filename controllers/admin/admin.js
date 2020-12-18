@@ -1,8 +1,8 @@
 const Admin = require('../../models/admin/Admin');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-
-
+const Client = require('../../models/client/Client');
 
 exports.adminLoginUsername = (req, res, next) => {
     Admin.findOne({username: req.body.username})
@@ -59,6 +59,23 @@ exports.addAdmin = (req, res, next) => {
 };
 
 
+
+exports.adminSuspendClient = (req, res, next) => {
+    if(req.query._id == undefined)
+        return next({status: 403, message: 'Incorrect ID'});
+    
+    var id = mongoose.Types.ObjectId(req.query._id);
+    var idd = req.query._id
+    Client.findByIdAndUpdate(idd, { suspended: true },function (err, docs) { 
+        if (err){ 
+            console.log(err) 
+            next({status: 400, message: err})
+        } 
+        else{ 
+            return res.json({status: 'success'})
+        } 
+    });     
+}
 
 
 

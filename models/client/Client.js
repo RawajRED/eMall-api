@@ -48,6 +48,10 @@ const clientSchema = new Schema({
         type: Boolean,
         default :false
     },
+    deleted:{
+        type: Boolean,
+        default :false
+    },
     languagePref: Number
 });
 

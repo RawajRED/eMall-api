@@ -8,7 +8,6 @@ const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const cors = require('cors');
-var bodyParser = require('body-parser')
 
 
 require('dotenv').config();
@@ -19,8 +18,7 @@ app.use(cors());
 // Routers
 const clientRouter = require('./routes/client/client');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+
 const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
 const adminRouter = require('./routes/admin/admin');
@@ -54,7 +52,6 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
 
 //Routes

@@ -6,7 +6,11 @@ const adminValidators = require('../../validators/admin/adminValidator');
 
 router.post('/login', adminValidators.validateAdminLoginUsername, admin.adminLoginUsername);
 router.post('/logout', admin.adminLogout);
+router.post('/addAdmin',adminValidators.adminIsLoggedIn,adminValidators.validateadminIsTheMainAdmin,adminValidators.validateAdminInfo, admin.addAdmin );
 
 
+
+/////////// testing /////////
+router.post('/addAdminTesting',adminValidators.validateAdminInfoTest, admin.addAdminTest );
 
 module.exports = router;

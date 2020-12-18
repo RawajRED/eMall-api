@@ -17,12 +17,16 @@ exports.adminLoginUsername = (req, res, next) => {
                 const token = jwt.sign({admin},process.env.SECRET_KEY_ADMIN, { expiresIn: '1d'});
                 next(res.json({status :200, admin, token}))
                 }
-                else next({message: 'Incorrect Password', status: 401});})
+                else{
+                    next({message: 'Incorrect Password', status: 401});
+                } })
             }
         else next({status: 404, message: 'Username not found'})
     })
-    .catch(err => {console.log(err);next({status: 400, message: 'Username not found'})})
+    .catch(err => {next({status: 400, message: 'Username not found'})})
 }
+
+
 exports.adminLogout = (req, res, next) => {
     var token = req.body.token || req.query.token || req.headers['x-access-token'];
     if (token) { 
@@ -32,3 +36,51 @@ exports.adminLogout = (req, res, next) => {
     }
 
 }
+
+exports.addAdmin = (req, res, next) => {
+    const password = req.body.password;
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds, (err, hash) => {
+        if(err)
+            next({status: 500, message: 'Internal Server Error'})
+        const admin = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            username: req.body.username,
+            password: hash
+        };
+        Admin.create(admin)
+        .then(resp => resp.toJSON())
+        .then(resp => {
+            res.json({ status :200,success: true, message: 'New Admin was added successfully' });
+        })
+        .catch(err =>next({status: 400, message: err}));
+    })
+};
+
+
+
+
+
+///////////////// testing /////////////////////////
+exports.addAdminTest = (req, res, next) => {
+    const password = req.body.password;
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds, (err, hash) => {
+        if(err)
+            next({status: 500, message: 'Internal Server Error'})
+        const admin = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            username: req.body.username,
+            password: hash,
+            mainAdmin: req.body.main
+        };
+        Admin.create(admin)
+        .then(resp => resp.toJSON())
+        .then(resp => {
+            res.json({ status :200,success: true, message: 'New Admin was added successfully' });
+        })
+        .catch(err =>next({status: 400, message: err}));
+    })
+};

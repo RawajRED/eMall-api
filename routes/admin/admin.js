@@ -8,6 +8,7 @@ router.post('/login', adminValidators.validateAdminLoginUsername, admin.adminLog
 router.post('/logout', admin.adminLogout);
 router.post('/addAdmin',adminValidators.adminIsLoggedIn,adminValidators.validateadminIsTheMainAdmin,adminValidators.validateAdminInfo, admin.addAdmin );
 router.put('/suspendClient',adminValidators.adminIsLoggedIn,admin.adminSuspendClient)
+router.put('/unsuspendClient',adminValidators.adminIsLoggedIn,admin.adminUnSuspendClient)
 
 
 /////////// testing /////////

@@ -24,7 +24,7 @@ const adminSchema = new Schema({
         type: String,
         required: true
     },
-    Deleted: {
+    deleted: {
         type : Boolean,
         default : false
     }

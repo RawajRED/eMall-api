@@ -8,7 +8,6 @@ const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const cors = require('cors');
-var bodyParser = require('body-parser')
 
 
 require('dotenv').config();
@@ -32,6 +31,8 @@ mongoose.connect(
   process.env.DATABASE_URL,
   {
     useNewUrlParser: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
     useUnifiedTopology: true
   }
 )
@@ -94,7 +95,5 @@ app.use((err, req, res, next  ) => {
   res.status(err.status || 500);
   res.json(err);
 });
-app.listen(process.env.PORT, function(){
-  console.log('Server started in ',process.env.PORT);
-});
+
 module.exports = app;

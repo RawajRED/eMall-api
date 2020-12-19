@@ -52,7 +52,7 @@ exports.clientUpdateInfo = (req, res, next) => {
         return next({status: 403, message: 'Incorrect ID'})
     Client.updateOne({_id: req.body.payload.client._id}, req.body)
     .then(resp => {
-        return res.json({status: 'success'})
+        return res.json({status: 200})
     })
     .catch(err => next({status: 400, message: err}))
 }

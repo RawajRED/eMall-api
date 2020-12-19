@@ -41,17 +41,16 @@ exports.validateClientRegisterEmail = [
 exports.validateClientLoginEmail = [
     check('email')
         .exists().withMessage('Email should be provided').bail()
-        .isEmail()
-        .normalizeEmail(),
+        .isEmail().withMessage('Email format is incorrect').bail(),
     check('password')
         .exists().withMessage("Password is missing").bail()
         .isString()
-        .isLength({min: 8, max: 20}).withMessage("Password is too short"),
+        .isLength({min: 8, max: 20}).withMessage("Password is too short (8 to 20 characters)"),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())
             next({status: 422, errors: errors.array()});
-        next();
+        else next();
     }
 ]
 

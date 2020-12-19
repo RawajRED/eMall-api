@@ -12,14 +12,17 @@ const clientSchema = new Schema({
         type: String,
         required: true
     },
+    password: String,
     country: String,
     city: String,
     phone: String,
     email: String,
-    verified: Boolean,
-    password: {
-        type: String
+    image: String,
+    verified: {
+        type: Boolean,
+        default: false
     },
+    otp: String,
     orders: {
         type: [Schema.Types.ObjectId],
         ref: 'Order'
@@ -44,7 +47,14 @@ const clientSchema = new Schema({
         type: [Schema.Types.ObjectId],
         ref: 'Product'
     },
-    languagePref: Number
+    languagePref: {
+    /* 
+        0: English
+        1: Arabic
+    */
+        type: Number,
+        default: 0
+    }
 });
 
 clientSchema.post('save', (doc) => {

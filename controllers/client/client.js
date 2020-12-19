@@ -34,16 +34,16 @@ exports.clientLoginEmail = (req, res, next) => {
             bcrypt.compare(req.body.password, client.password, (err, result) => {
                 delete client.password;
                 if(err)
-                    return next({status: 500, message: 'Incorrect Password'});
+                    return next({status: 500, message: 'Incorrect Email or Password'});
                 if(result){
                     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
                     return res.json({client, token})
                 }
-                else next({message: 'Incorrect Password', status: 401});
+                else next({message: 'Incorrect Email or Password', status: 401});
             })
-        else next({status: 404, message: 'Email not found'})
+        else next({status: 404, message: 'Incorrect Email or Password'})
     })
-    .catch(err => next({status: 400, message: 'Email not found'}))
+    .catch(err => next({status: 400, message: 'Incorrect Email or Password'}))
 }
 
 exports.clientUpdateInfo = (req, res, next) => {

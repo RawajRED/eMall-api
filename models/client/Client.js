@@ -16,7 +16,10 @@ const clientSchema = new Schema({
     country: String,
     city: String,
     phone: String,
-    email: String,
+    email: {
+        type: String,
+        unique: true
+    },
     image: String,
     verified: {
         type: Boolean,
@@ -57,7 +60,9 @@ const clientSchema = new Schema({
     */
         type: Number,
         default: 0
-    }
+    },
+    facebookId: String,
+    image: String
 });
 
 clientSchema.post('save', (doc) => {

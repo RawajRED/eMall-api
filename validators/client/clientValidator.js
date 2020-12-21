@@ -6,30 +6,41 @@ const jwt = require('jsonwebtoken');
 // TODO: Add languages to validation message
 exports.validateClientRegisterEmail = [
         check('firstName')
-            .exists().withMessage(errors.firstNameMissing).bail()
-            .isString().withMessage('first name should be a string')
-            .isAlphanumeric().withMessage(errors.firstNameAlphanumeric)
-            .isLength({min: 3, max: 30}).withMessage(errors.firstNameAlphanumeric),
+            .exists().withMessage('First Name should be provided').bail()
+            .isString()
+            .isAlphanumeric().withMessage('First Name should be alphanumeric').bail()
+            .isLength({min: 2, max: 20}).withMessage('First Name should be between 2 and 20 characters'),
+        
+
         check('lastName')
             .exists().withMessage('Last Name is missing').bail()
             .isString()
-            .isAlphanumeric().withMessage('Last Name should not contain special characters')
+            .isAlphanumeric().withMessage('Last Name should not contain special characters').bail()
             .isLength({min: 3, max: 30}).withMessage('Last name should be between 3 and 30 characters'),
+        
+
         check('email')
-            .exists().withMessage("Email is missing")
-            .isEmail()
-            .normalizeEmail()
-            .isLength({min: 3, max: 30}).withMessage('Last name should be between 3 and 30 characters')
+            .exists().withMessage("Email is missing").bail()
+            .isEmail().withMessage('Invalid Email').bail()
+            .normalizeEmail({gmail_remove_dots: false})
             .custom((value) => {
                 return Client.findOne({email: value}).then(client => {
                     if (client)
                         return Promise.reject('Email already in use')
                 })
             }),
+        
+
+        check('phone')
+            .exists().withMessage('Phone number is missing').bail(),
+        
+
         check('password')
             .exists().withMessage("Password is missing").bail()
             .isString()
-            .isLength({min: 8, max: 20}),
+            .isLength({min: 8, max: 30}).withMessage('Password should be between 8 and 30 characters').bail(),
+        
+
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty())

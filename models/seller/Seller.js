@@ -1,4 +1,3 @@
-const { ObjectID } = require('mongodb');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -12,6 +11,10 @@ const sellerSchema = new Schema({
         type: String,
         required: true
     },
+    email: {
+        type: String,
+        unique: true,
+    },
     title: {
         type: String,
         default: 'Store Manager'
@@ -19,6 +22,15 @@ const sellerSchema = new Schema({
     authorities: {
         type: [Number],
         default: [0]
+    },
+    facebookId: String,
+    password: String,
+    phone: String,
+    otp: String,
+    image: String,
+    languagePref: {
+        type: Number,
+        default: 0
     }
 });
 

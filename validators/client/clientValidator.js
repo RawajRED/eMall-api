@@ -52,7 +52,8 @@ exports.validateClientRegisterEmail = [
 exports.validateClientLoginEmail = [
     check('email')
         .exists().withMessage('Email should be provided').bail()
-        .isEmail().withMessage('Email format is incorrect').bail(),
+        .isEmail().withMessage('Email format is incorrect').bail()
+        .normalizeEmail({gmail_remove_dots: false}),
     check('password')
         .exists().withMessage("Password is missing").bail()
         .isString()

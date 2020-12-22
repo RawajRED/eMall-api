@@ -39,7 +39,6 @@ exports.clientRegisterEmail = (req, res, next) => {
 };
 
 exports.clientLoginFacebook = (req, res, next) => {
-    console.log('Logging in with facebook!, data: ', req.body);
     // Check if there's a client registered with this Facebook ID
     Client.findOne({facebookId: req.body.id})
     .then(resp => {
@@ -47,7 +46,6 @@ exports.clientLoginFacebook = (req, res, next) => {
             return resp.toJSON()
         else {
             // Check if client is registered with email and link
-            console.log('Trying to link account if possible!')
             Client.findOneAndUpdate({email: req.body.email}, {facebookId: req.body.id, verified: true}, { new: true })
             .then(resp => {
                 let name = req.body.name.split(" ");
@@ -77,7 +75,6 @@ exports.clientLoginFacebook = (req, res, next) => {
         }})
     .then(client => {
         if(client){
-            console.log('FOUND CLIENT WITH FB ID', client)
             const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
             return res.json({client, token})
         }

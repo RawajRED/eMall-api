@@ -15,11 +15,13 @@ const app = express();
 app.set('secret_key', process.env.SECRET_KEY);
 app.use(cors());
 
-// Routers
-const clientRouter = require('./routes/client/client');
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+
+// Routers
+
+const clientRouter = require('./routes/client/client');
+const sellerRouter = require('./routes/seller/seller');
 const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
 const adminRouter = require('./routes/admin/admin');
@@ -63,6 +65,7 @@ app.use('/api/categories', categoryRouter);
 app.use('/api/subcategories', subcategoryRouter);
 app.use('/api/client', clientRouter);
 app.use('/api/admin',adminRouter);
+app.use('/api/seller',sellerRouter);
 
 app.use(
   "/api",

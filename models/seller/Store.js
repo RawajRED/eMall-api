@@ -56,7 +56,7 @@ const storeSchema = new Schema({
     logo: String,
     credit: Number,
     bankInfo: String
-});
+}, {timestamps: { createdAt: 'created_at'}});
 
 storeSchema.post('save', (doc) => {
     

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const Store = require('./Store');
 
 const sellerSchema = new Schema({
     store: {
@@ -26,12 +27,15 @@ const sellerSchema = new Schema({
     facebookId: String,
     password: String,
     phone: String,
-    otp: String,
     image: String,
     languagePref: {
         type: Number,
         default: 0
     }
+});
+
+sellerSchema.post('save', (doc) => {
+    Store.update({_id: doc.store}, {$push: {sellers: doc._id}});
 });
 
 

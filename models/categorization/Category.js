@@ -26,7 +26,8 @@ const categorySchema = new Schema({
         type: String,
         required: true
     },
-    iconType: String
+    iconType: String,
+    banner: String
 });
 
 const categoryModel = mongoose.model('Category', categorySchema);

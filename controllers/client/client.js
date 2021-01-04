@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const sendMail = require('../../sendgrid').sendMail;
 
 exports.clientRegisterEmail = (req, res, next) => {
+    console.log(req.body);
     const password = req.body.password;
     const saltRounds = 10;
     bcrypt.hash(password, saltRounds, (err, hash) => {

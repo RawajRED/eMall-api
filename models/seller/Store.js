@@ -15,40 +15,41 @@ const storeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Page'
     },
-    categories: {
-        type: [Schema.Types.ObjectId],
+    categories: [{
+        type: Schema.Types.ObjectId,
         ref: 'Category',
         default: []
-    },
-    subcategories: {
-        type: [Schema.Types.ObjectId],
+    }],
+    subcategories: [{
+        type: Schema.Types.ObjectId,
         ref: 'Subcategory',
         default: []
-    },
-    products: {
-        type: [Schema.Types.ObjectId],
+    }],
+    products: [{
+        type: Schema.Types.ObjectId,
         ref: 'Product',
         default: []
-    },
-    orders: {
-        type: [Schema.Types.ObjectId],
+    }],
+    orders: [{
+        type: Schema.Types.ObjectId,
         ref: 'Order',
         default: []
-    },
-    payments: {
-        type: [Schema.Types.ObjectId],
+    }],
+    payments: [{
+        type: Schema.Types.ObjectId,
         ref: 'Payment',
         default: []
-    },
-    sellers: {
-        type: [Schema.Types.ObjectId],
+    }],
+    sellers: [{
+        type: Schema.Types.ObjectId,
         ref: 'Seller',
         default: []
-    },
-    withdrawalRequests: {
-        type: [Schema.Types.ObjectId],
-        ref: 'withdrawalRequest'
-    },
+    }],
+    withdrawalRequests: [{
+        type: Schema.Types.ObjectId,
+        ref: 'withdrawalRequest',
+        default: []
+    }],
     approved: {
         type: Boolean,
         default: false

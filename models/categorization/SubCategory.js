@@ -22,11 +22,9 @@ const subcategorySchema = new Schema({
             required: true
         }
     },
-    icon: {
-        type: String,
-        required: true
-    },
+    icon: String,
     iconType: String,
+    image: String,
     category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'

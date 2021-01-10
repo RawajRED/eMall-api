@@ -1,5 +1,13 @@
 const Category = require('../../models/categorization/Category');
 
+
+exports.createCategory = (req, res, next) => {
+    Category.create(req.body)
+    .then(resp => resp.toJSON())
+    .then(resp => res.json(resp))
+    .catch(err => next(err))
+}
+
 exports.getCategories = (req, res, next) => {
     Category.find({})
     .then(resp => res.json(resp))
@@ -8,13 +16,6 @@ exports.getCategories = (req, res, next) => {
 
 exports.getCategory = (req, res, next) => {
     Category.findOne({_id: req.params.id})
-    .then(resp => res.json(resp))
-    .catch(err => next(err))
-}
-
-exports.createCategory = (req, res, next) => {
-    Category.create(req.body)
-    .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
     .catch(err => next(err))
 }

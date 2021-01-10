@@ -22,9 +22,12 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 const clientRouter = require('./routes/client/client');
 const sellerRouter = require('./routes/seller/seller');
+const storeRouter = require('./routes/seller/store');
+const productRouter = require('./routes/seller/product/product');
 const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
 const adminRouter = require('./routes/admin/admin');
+const searchRouter = require('./routes/search');
 
 // Connect to database URL
 
@@ -61,11 +64,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
 
 //Routes
-app.use('/api/categories', categoryRouter);
-app.use('/api/subcategories', subcategoryRouter);
+app.use('/api/category', categoryRouter);
+app.use('/api/subcategory', subcategoryRouter);
 app.use('/api/client', clientRouter);
-app.use('/api/admin',adminRouter);
-app.use('/api/seller',sellerRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/seller', sellerRouter);
+app.use('/api/store', storeRouter);
+app.use('/api/product', productRouter);
+app.use('/api/search', searchRouter);
 
 app.use(
   "/api",

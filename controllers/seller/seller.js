@@ -2,7 +2,6 @@ const Seller = require('../../models/seller/Seller');
 const Store = require('../../models/seller/Store');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { response } = require('express');
 
 const generateOtp = () => {
     return 'ABCDE';

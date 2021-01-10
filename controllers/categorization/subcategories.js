@@ -12,6 +12,12 @@ exports.getSubcategory = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.getSubcategoriesByCategory = (req, res, next) => {
+    Subcategory.find({category: req.params._id})
+    .then(resp => res.json(resp))
+    .catch(err => next(err))
+}
+
 exports.createSubcategory = (req, res, next) => {
     Subcategory.create(req.body)
     .then(resp => resp.toJSON())

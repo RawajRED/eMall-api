@@ -40,7 +40,7 @@ exports.validateSellerRegister = [
 
     check('seller.title')
         .isString()
-        .isLength({min: 8, max: 20}).withMessage("Title is too short (8 to 20 characters)"),
+        .isLength({min: 2, max: 40}).withMessage("Title is too short (2 to 40 characters)"),
         
 
     check('seller.phone')
@@ -84,12 +84,12 @@ exports.validateSeller = [
     check('password')
         .exists().withMessage("Password is missing").bail()
         .isString()
-        .isLength({min: 8, max: 20}).withMessage("Password is too short (8 to 20 characters)"),
+        .isLength({min: 8, max: 30}).withMessage("Password is too short (8 to 30 characters)"),
 
     check('title')
         .optional()
         .isString()
-        .isLength({min: 8, max: 20}).withMessage("Title is too short (8 to 20 characters)"),
+        .isLength({min: 2, max: 40}).withMessage("Title is too short (2 to 40 characters)"),
         
 
     check('phone')
@@ -103,3 +103,13 @@ exports.validateSeller = [
     }
 
 ]
+
+exports.authenticateSeller = (req, res, next) => {
+    const token = req.get('token');
+    jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
+        if(err)
+            return next({status: err.status, message: err.message})
+        req.body.payload = decoded;
+        next();
+    })
+}

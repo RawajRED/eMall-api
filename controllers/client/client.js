@@ -1,6 +1,7 @@
 const Client = require('../../models/client/Client');
 const Cart = require('../../models/client/Cart');
 const Wishlist = require('../../models/client/Wishlist');
+const ProductReview = require('../../models/seller/product/ProductReview');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const sendMail = require('../../sendgrid').sendMail;
@@ -141,10 +142,10 @@ exports.clientVerifyOtp = (req, res, next) => {
 }
 
 exports.clientUpdateInfo = (req, res, next) => {
-    const client = req.body.payload.client;
+    const client = req.body.client;
     if(client._id !== req._id)
         return next({status: 403, message: 'Incorrect ID'})
-    Client.updateOne({_id: req.body.payload.client._id}, req.body)
+    Client.updateOne({_id: client._id}, req.body)
     .then(resp => {
         return res.json({status: 200})
     })
@@ -152,7 +153,7 @@ exports.clientUpdateInfo = (req, res, next) => {
 }
 
 exports.getClientCart = (req, res, next) => {
-    const client = req.body.payload.client;
+    const client = req.body.client;
     if(client._id !== req.params._id)
         return next({status: 403, message: 'Incorrect ID'})
     Cart.findOne({clientId: req.params._id})
@@ -166,4 +167,22 @@ exports.getClientWishlist = (req, res, next) => {
     .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
     .catch(err => next({status: 404, message: "Couldn't find wishlist"}))
+}
+
+exports.leaveProductReview = (req, res, next) => {
+    const review = {
+        product: req.body.product,
+        client: req.body.client._id,
+        stars: req.body.stars,
+        review: req.body.review
+    };
+
+    ProductReview.create(review)
+    .then(resp => resp.toJSON())
+    .then(productReview => res.json(productReview))
+    .catch(err => next(err));
+}
+
+exports.productReviewHelpful = (req, res, next) => {
+    
 }

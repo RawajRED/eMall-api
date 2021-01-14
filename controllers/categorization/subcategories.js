@@ -25,8 +25,14 @@ exports.createSubcategory = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.editSubcategory = (req, res, next) => {
+    Subcategory.findOneAndUpdate({_id: req.body._id}, req.body.data, {new: true})
+    .then(resp => resp ? res.json(resp) : next({status: 404, message: 'Subcategory problem'}))
+    .catch(err => next(err))
+}
+
 exports.deleteSubcategory = (req, res, next) => {
     Subcategory.deleteOne(req.body)
-    .then(resp => res.json(resp))
+    .then(resp => resp.deletedCount > 0 ?  res.json(resp) : next({status: 404, message: `Invalid Subcategory ID`}))
     .catch(err => next(err));
 }

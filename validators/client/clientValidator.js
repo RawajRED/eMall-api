@@ -73,7 +73,8 @@ exports.clientIsLoggedIn = (req, res, next) => {
             return next({status: 400, message: 'Invalid Token'})
         }
         else{
-            req.body.payload = decoded;
+            console.log(decoded)
+            req.body.client = decoded.client;
             next();
         }
     });

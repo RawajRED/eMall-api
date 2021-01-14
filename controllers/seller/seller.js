@@ -45,12 +45,14 @@ exports.createStoreAndSellerEmail = (req, res, next) => {
 
 exports.sellerSignInEmail = (req, res, next) => {
     Seller.findOne({email: req.body.email})
+    .populate('store')
     .then(resp => resp.toJSON())
     .then(seller => {
         if(seller) {
             bcrypt.compare(req.body.password, seller.password)
             .then(result => {
                 if(result){
+                    delete seller.password;
                     Store.findOne({_id: seller.store})
                     .then(resp => resp.toJSON())
                     .then(store => {
@@ -112,4 +114,10 @@ exports.sellerSignInFacebook = (req, res, next) => {
             })
             .catch(err => next({status: 404, msg: `No Store registered on this Facebook account`}));
     })
+}
+
+exports.sellerEditStore = (req, res, next) => {
+    Store.findOneAndUpdate({_id: req.body._id}, req.body.data, {new: true})
+    .then(resp => resp ? res.json(resp) : next({status: 404, message: 'Store not found'}))
+    .catch(err => next(err));
 }

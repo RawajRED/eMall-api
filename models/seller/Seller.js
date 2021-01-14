@@ -35,7 +35,7 @@ const sellerSchema = new Schema({
 });
 
 sellerSchema.post('save', (doc) => {
-    Store.update({_id: doc.store}, {$push: {sellers: doc._id}});
+    Store.findOneAndUpdate({_id: doc.store}, {$push: {sellers: doc._id}});
 });
 
 

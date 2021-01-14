@@ -28,6 +28,7 @@ const categoryRouter = require('./routes/categorization/categories')
 const subcategoryRouter = require('./routes/categorization/subcategories')
 const adminRouter = require('./routes/admin/admin');
 const searchRouter = require('./routes/search');
+const adsRouter = require('./routes/advertisement');
 
 // Connect to database URL
 
@@ -72,6 +73,7 @@ app.use('/api/seller', sellerRouter);
 app.use('/api/store', storeRouter);
 app.use('/api/product', productRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/advertisement', adsRouter);
 
 app.use(
   "/api",

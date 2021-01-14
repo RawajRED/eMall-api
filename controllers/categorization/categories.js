@@ -21,14 +21,13 @@ exports.getCategory = (req, res, next) => {
 }
 
 exports.editCategory = (req, res, next) => {
-    console.log(req.body)
-    Category.updateOne({_id: req.body._id}, req.body.data, {new: true})
+    Category.findOneAndUpdate({_id: req.body._id}, req.body.data, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: 'Category'}))
-    .catch(err => {console.log(err);next(err)})
+    .catch(err => next(err))
 }
 
 exports.deleteCategory = (req, res, next) => {
     Category.deleteOne(req.body)
-    .then(resp => res.json(resp))
+    .then(resp => resp.deletedCount > 0 ?  res.json(resp) : next({status: 404, message: `Invalid Category ID`}))
     .catch(err => next(err));
 }

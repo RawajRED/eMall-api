@@ -40,10 +40,10 @@ const productSchema = new Schema({
     },
     discount: Number,
     discountPeriod: Date,
-    reviews: {
-        type: [Schema.Types.ObjectId],
+    reviews: [{
+        type: Schema.Types.ObjectId,
         ref: 'ProductReview'
-    },
+    }],
     options: [{
         title: {
             en: String,
@@ -54,26 +54,14 @@ const productSchema = new Schema({
                 en: String,
                 ar: String
             },
-            extraPrice: Number
+            extraPrice: Number,
+            stock: Number
         }]
     }],
-    variants: [{
-        name: {
-            en: String,
-            ar: String
-        },
-        options: [{
-            variety: {
-                en: String,
-                ar: String,
-            },
-            product: {
-                type: Schema.Types.ObjectId,
-                ref: 'Product',
-            },
-            image: String
-        }]
-    }],
+    variants: {
+        type: Schema.Types.ObjectId,
+        ref: 'ProductVariant'
+    },
     images: [String],
     stock: Number,
     price: Number,
@@ -98,8 +86,8 @@ productSchema.post('save', doc => {
     .catch(err => console.log('ERR!!!!', err));
 })
 
-productSchema.pre('remove', () => {
-    Store.updateOne({_id: doc.store}, {$pull: {products: this._id}})
+productSchema.pre('remove', function() {
+    Store.updateOne({_id: this.store}, {$pull: {products: this._id}})
 })
 
 const productModel = mongoose.model('Product', productSchema);

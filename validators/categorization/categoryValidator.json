@@ -1,0 +1,16 @@
+{
+    "name": {
+        "enExists": "English name is missing",
+        "enIsString": "English name should be a string of characters",
+        "arExists": "Arabic name is missing",
+        "arIsString": "Arabic name should be a string of characters"
+    },
+    "description": {
+        "enExists": "English description is missing",
+        "enIsString": "English description should be a string of characters",
+        "enLength": "English description should be between 10 and 200 characters long",
+        "arExists": "Arabic description is missing",
+        "arIsString": "Arabic description should be a string of characters",
+        "arLength": "Arabic description should be between 10 and 200 characters long"  
+    }
+}

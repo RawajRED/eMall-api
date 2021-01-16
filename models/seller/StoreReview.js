@@ -28,10 +28,8 @@ const storeReviewSchema = new Schema({
 })
 
 storeReviewSchema.pre('save', function(next){
-    console.log('this is',this);
     storeReviewModel.findOne({store: this.store, client: this.client})
     .then(resp => {
-        console.log('RESP FOUND!!!!!!!!!!!!!', resp)
         if(resp)
             return next({status: 403, message: 'You already left a review for this store!'})
         else next();

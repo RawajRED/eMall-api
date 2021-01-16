@@ -66,6 +66,12 @@ exports.getSimilarProducts = (req, res, next) => {
     .catch(err => next(err));
 }
 
+exports.getStoreProducts = (req, res, next) => {
+    Product.find({store: req.params.id})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
 exports.findProduct = (req, res, next) => {
     Product.find(req.body)
     .then(resp => res.json(resp))

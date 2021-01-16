@@ -5,37 +5,37 @@ const Category = require('../../models/categorization/Category');
 
 exports.getStore = (req, res, next) => {
     Store.findOne({_id: req.params.id})
-    .select('categories subcategories title description page logo')
+    .select('categories subcategories title description page logo reviews')
     .populate('categories')
     .populate('page')
-    .then(resp => {console.log(resp);res.json(resp)})
-    .catch(err => next(err));
+    .populate({
+        path: 'reviews',
+        populate: {
+            path: 'client',
+            select: 'firstName lastName image',
+        }
+    })
+    .then(resp => res.json(resp))
+    .catch(err => next(err))
 }
 
 exports.updateStore = (req, res, next) => {
     Store.findOneAndUpdate({_id: req.body._id}, req.body.details, {new: true})
     .then(resp => res.json(resp))
-    .catch(err => next(err));
+    .catch(err => next(err))
 }
 
 exports.getStoreProductsByCategory = (req, res, next) => {
-    Store.find({$or: [
-        {categories: req.body.category, title: {$regex: req.body.search, $options: 'i'}},
-        {catgories: req.body.category}
-    ]})
+    Store.find({categories: req.body.category})
     .select('title description categories products logo')
     .populate({
         path: 'products',
-        match: {$or: [
-            {category: req.body.category, "title.en": {$regex: req.body.search, $options: 'i'}, stock: {$gt: 0}},
-            {category: req.body.category, "title.ar": {$regex: req.body.search, $options: 'i'}, stock: {$gt: 0}},
-            {category: req.body.category, stock: {$gt: 0}},
-        ]},
+        match: {category: req.body.category, stock: {$gt: 0}},
         select: 'title description discount price currency images options'
     })
     .populate('categories')
     .then(store => res.json(store))
-    .catch(err => next({status: 404, message: 'No Stores Found'}));
+    .catch(err => next({status: 404, message: err}));
 }
 
 exports.getStoreProductsBySubcategory = (req, res, next) => {

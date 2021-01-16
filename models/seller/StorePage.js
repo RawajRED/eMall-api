@@ -13,11 +13,15 @@ const storePageSchema = new Schema({
     homeAds: [{
         /*
             0 - Static Image
-            1 - Product Image
-            2 - Product Ad
+            1 - Product Ad
+            2 - Product image
         */
         adType: Number,
         image: String,
+        position: {
+            type: Number,
+            default: 0
+        },
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product'

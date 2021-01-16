@@ -57,6 +57,14 @@ const storeSchema = new Schema({
         default: false
     },
     logo: String,
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: 'StoreReview'
+    }],
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: 'StoreReview'
+    }],
     credit: Number,
     facebookPage: String,
     website: String,

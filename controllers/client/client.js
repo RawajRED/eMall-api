@@ -2,6 +2,7 @@ const Client = require('../../models/client/Client');
 const Cart = require('../../models/client/Cart');
 const Wishlist = require('../../models/client/Wishlist');
 const ProductReview = require('../../models/seller/product/ProductReview');
+const StoreReview = require('../../models/seller/StoreReview');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const sendMail = require('../../sendgrid').sendMail;
@@ -180,6 +181,20 @@ exports.leaveProductReview = (req, res, next) => {
     ProductReview.create(review)
     .then(resp => resp.toJSON())
     .then(productReview => res.json(productReview))
+    .catch(err => next(err));
+}
+
+exports.leaveStoreReview = (req, res, next) => {
+    const review = {
+        store: req.body.store,
+        client: req.body.client._id,
+        stars: req.body.stars,
+        review: req.body.review
+    }
+
+    StoreReview.create(review)
+    .then(resp => resp.toJSON())
+    .then(storeReview => res.json(storeReview))
     .catch(err => next(err));
 }
 

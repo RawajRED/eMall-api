@@ -5,6 +5,7 @@ const productVariant = require('../../../controllers/seller/product/productVaria
 
 router.post('/similar-products', product.getSimilarProducts);
 router.post('/more-from-seller', product.getMoreFromSeller);
+router.get('/store/:id', product.getStoreProducts);
 router.post('/variant', productVariant.createProductVariant);
 router.get('/variant/:id', productVariant.getProductVariant);
 router.post('/', product.createProduct);

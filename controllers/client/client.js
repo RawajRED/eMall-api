@@ -51,11 +51,11 @@ exports.clientLoginFacebook = (req, res, next) => {
             // Check if client is registered with email and link
             Client.findOneAndUpdate({email: req.body.email}, {facebookId: req.body.id, verified: true}, { new: true })
             .then(resp => {
-                let name = req.body.name.split(" ");
-                name = name.length > 1 ? {firstName: name[0], lastName: name[1]} : {firstName: name[0], lastName: ''}
                 if(resp)
                     return resp.toJSON();
-                else
+                else {
+                    let name = req.body.name.split(" ");
+                    name = name.length > 1 ? {firstName: name[0], lastName: name[1]} : {firstName: name[0], lastName: ''}
                     Client.create({
                         email: req.body.email,
                         facebookId: req.body.id,
@@ -66,12 +66,13 @@ exports.clientLoginFacebook = (req, res, next) => {
                     .then(resp => resp.toJSON())
                     .then(resp => {
                         const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-                        return res.json({client: resp, token});
+                        return res.json({client: resp, token, type: 'client'});
                     });
+                }
             })
             .then(client => {
                 const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-                return res.json({client, token});
+                return res.json({client, token, type: 'client'});
             })
             .catch(err => console.log(err))
 
@@ -79,7 +80,7 @@ exports.clientLoginFacebook = (req, res, next) => {
     .then(client => {
         if(client){
             const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-            return res.json({client, token})
+            return res.json({client, token, type: 'client'})
         }
     })
 }
@@ -96,7 +97,7 @@ exports.clientLoginEmail = (req, res, next) => {
                 if(result){
                     if(client.verified){
                         const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-                        return res.json({client, token})
+                        return res.json({client, token, type: 'client'})
                     }
                     else {
                         const otp = 'ABCDE';
@@ -143,13 +144,9 @@ exports.clientVerifyOtp = (req, res, next) => {
 }
 
 exports.clientUpdateInfo = (req, res, next) => {
-    const client = req.body.client;
-    if(client._id !== req._id)
-        return next({status: 403, message: 'Incorrect ID'})
-    Client.updateOne({_id: client._id}, req.body)
-    .then(resp => {
-        return res.json({status: 200})
-    })
+    console.log(req.body.client._id)
+    Client.findOneAndUpdate({_id: req.body.client._id}, req.body, {new: true})
+    .then(resp => {resp ? res.json(resp) : next({status: 404, message: `Couldn't find client`})})
     .catch(err => next({status: 400, message: err}))
 }
 

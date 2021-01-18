@@ -45,24 +45,23 @@ exports.createStoreAndSellerEmail = (req, res, next) => {
 
 exports.sellerSignInEmail = (req, res, next) => {
     Seller.findOne({email: req.body.email})
-    .populate('store')
+    .populate({
+        path: 'store',
+        select: 'approved logo title'
+    })
     .then(resp => resp.toJSON())
     .then(seller => {
         if(seller) {
             bcrypt.compare(req.body.password, seller.password)
             .then(result => {
+                console.log('result', result)
                 if(result){
                     delete seller.password;
-                    Store.findOne({_id: seller.store})
-                    .then(resp => resp.toJSON())
-                    .then(store => {
-                        if(store){
-                            const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
-                            console.log(seller, store, token)
-                            return res.json({seller, store, token})
-                        } else return next({status: 404, errors: [{msg: `Couldn't find store` }]})
-                    })
-                   .catch(err => next({status: 404, errors: [{msg: `Couldn't find store` }]}))
+                    const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+                    const store = seller.store;
+                    delete seller.store;
+                    console.log({seller, store, token, type: 'store'})
+                    return res.json({seller, store, token, type: 'store'})
                 } else throw new Error();
             })
             .catch(err => next({status: 403, errors: [{msg: `Incorrect email or password` }]}))
@@ -73,8 +72,11 @@ exports.sellerSignInEmail = (req, res, next) => {
 }
 
 exports.sellerSignInFacebook = (req, res, next) => {
-    console.log(req.body);
     Seller.findOne({facebookId: req.body.id})
+    .populate({
+        path: 'store',
+        select: 'approved logo title'
+    })
     .then(resp => {
         if(resp)
             return resp.toJSON()
@@ -84,32 +86,23 @@ exports.sellerSignInFacebook = (req, res, next) => {
         resp.toJSON()
     })
     .then(seller => {
-        Store.findOne({_id: seller.store})
-        .then(resp => resp.toJSON())
-        .then(store => {
-            console.log('store', store)
-            if(store){
-                const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
-                return res.json({seller, store, token})
-            }
-            else return next({status: 404, errors: [{msg: `Couldn't find store` }]})
-        })
-        .catch(err => next({status: 404, errors: [{msg: `Couldn't find store`}]}));
+        const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+        return res.json({seller, store, token})
     })
     .catch(err => {
         Seller.findOneAndUpdate({email: req.body.email}, {facebookId: req.body.id}, {new: true})
+        .populate({
+            path: 'store',
+            select: 'approved logo title'
+        })
             .then(resp => resp.toJSON())
             .then(seller => {
                 if(seller) {
-                        Store.findOne({_id: seller.store})
-                        .then(store => store.toJSON())
-                        .then(store => {
-                            if(store) {
-                                const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
-                                return res.json({store, seller, token});
-                            }
-                        })
-                        .catch(err => next({status: 400, errors: [{msg: `Couldn't find store`}]}))
+                    const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+                    const store = seller.store;
+                    delete seller.store;
+                    console.log({store, seller, token})
+                    return res.json({store, seller, token});
                 } else return next({status: 404, msg: `No Store registered on this Facebook account`});
             })
             .catch(err => next({status: 404, msg: `No Store registered on this Facebook account`}));

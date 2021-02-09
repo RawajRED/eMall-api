@@ -9,7 +9,7 @@ exports.getProductVariant = (req, res, next) => {
 }
 
 exports.createProductVariant = (req, res, next) => {
-    const product = req.body.productId;
+    const product = req.body.product;
     const title = {
         en: req.body.title.en,
         ar: req.body.title.ar

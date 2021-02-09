@@ -3,7 +3,9 @@ const ProductVariant = require('../../../models/seller/product/ProductVariant');
 
 exports.createProduct = (req, res, next) => {
     const product = req.body.product;
+    product.store = req.body.store._id;
     const variant = req.body.variant;
+    console.log(req.body);
     Product.create(product)
     .then(resp => resp.toJSON())
     .then(prod => {
@@ -73,7 +75,16 @@ exports.getStoreProducts = (req, res, next) => {
 }
 
 exports.findProduct = (req, res, next) => {
-    Product.find(req.body)
+    const criteria = req.body.criteria;
+    Product.find({$or: [
+        {
+            "title.en": {$regex: criteria, $options: "i"}
+        },
+        {
+            "title.ar": {$regex: criteria, $options: "i"}
+        }
+    ]})
+    .populate('store')
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }

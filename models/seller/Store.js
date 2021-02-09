@@ -71,7 +71,7 @@ const storeSchema = new Schema({
     bankInfo: String
 }, {timestamps: { createdAt: 'created_at'}});
 
-storeSchema.post('save', (doc) => {
+storeSchema.post('save', function(doc){
     StorePage.create({store: doc._id})
     .then(resp => resp.toJSON())
     .then(page => {
@@ -82,7 +82,7 @@ storeSchema.post('save', (doc) => {
     
 });
 
-storeSchema.post('remove', (doc) => {
+storeSchema.post('remove', function(doc){
     StorePage.deleteOne({store: doc._id});
     Product.deleteMany({store: doc._id});
     Seller.deleteMany({store: doc._id});

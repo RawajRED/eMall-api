@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Cart = require('./Cart');
 const Wishlist = require('./Wishlist');
+const StoreReview = require('../seller/StoreReview');
+const ProductReview = require('../seller/product/ProductReview');
+
 
 const clientSchema = new Schema({
     firstName: {
@@ -26,30 +29,33 @@ const clientSchema = new Schema({
         default: false
     },
     otp: String,
-    orders: {
-        type: [Schema.Types.ObjectId],
-        ref: 'Order'
-    },
-    payments: {
-        type: [Schema.Types.ObjectId],
-        ref: 'Payment'
-    },
-    cartId: {
+    orders: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Order',
+        default: []
+    }],
+    payments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Payment',
+        default: []
+    }],
+    cart: {
         type: Schema.Types.ObjectId,
         ref: 'Cart'
     },
-    wishlistId: {
+    wishlist: {
         type: Schema.Types.ObjectId,
         ref: 'Wishlist'
     },
-    reviews: {
-        type: [Schema.Types.ObjectId],
+    reviews: [{
+        type: Schema.Types.ObjectId,
         ref: 'Reviews'
-    },
-    viewed: {
-        type: [Schema.Types.ObjectId],
+    }],
+    viewed: [{
+        type: Schema.Types.ObjectId,
         ref: 'Product'
-    },    suspended:{
+    }],
+    suspended:{
         type: Boolean,
         default :false
     },
@@ -62,24 +68,69 @@ const clientSchema = new Schema({
         default: 0
     },
     facebookId: String,
-    image: String
+    image: String,
+    credit: {
+        type: Number,
+        default: 0
+    },
+    addresses: [{
+        governate: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        street: {
+            type: String,
+            required: true
+        },
+        building: {
+            type: String,
+            required: true
+        },
+        apartment: {
+            type: String,
+            required: true
+        },
+        extra: String,
+        active: {
+            type: Boolean,
+            default: false
+        }
+    }]
 });
 
-clientSchema.post('save', (doc) => {
-    Cart.create({clientId: doc._id})
-    .then(() =>
-        Wishlist.create({clientId: doc._id})
+clientSchema.pre('save', function(next){
+    console.log(`---------------------------POST SAVE--------------------------`);
+    console.log('doc is', this);
+    Cart.create({client: this._id})
+    .then(resp => resp.toJSON())
+    .then((cart) => {
+        console.log(`Created a cart!`, cart)
+        Wishlist.create({client: this._id})
+        .then(resp => resp.toJSON())
+        .then(wishlist => {
+            console.log(`Created a wishlist!`, wishlist)
+            this.cart = cart._id;
+            this.wishlist = wishlist._id;
+            next();
+        })
+        .catch(err => next(err))
+    }
     )
+    .catch(err => next(err))
 });
 
-clientSchema.post('remove', (doc) => {
-    Cart.remove({clientId: doc._id})
-    .then(() =>
-        Wishlist.remove({clientId: doc._id})
-    )
+clientSchema.post('remove', function(doc){
+    const promises = [];
+    promises.push(Cart.remove({client: doc._id}));
+    promises.push(Wishlist.remove({client: doc._id}))
+    promises.push(StoreReview.remove({client: doc._id}))
+    promises.push(ProductReview.remove({client: doc._id}))
+    Promise.all(promises)
 });
-
-
 
 const clientModel = mongoose.model('Client', clientSchema);
 

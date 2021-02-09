@@ -20,10 +20,6 @@ const sellerSchema = new Schema({
         type: String,
         default: 'Store Manager'
     },
-    authorities: {
-        type: [Number],
-        default: [0]
-    },
     facebookId: String,
     password: String,
     phone: String,
@@ -34,8 +30,8 @@ const sellerSchema = new Schema({
     }
 });
 
-sellerSchema.post('save', (doc) => {
-    Store.findOneAndUpdate({_id: doc.store}, {$push: {sellers: doc._id}});
+sellerSchema.post('save', function(doc){
+    mongoose.model('Store').findOneAndUpdate({_id: doc.store}, {$push: {sellers: doc._id}});
 });
 
 

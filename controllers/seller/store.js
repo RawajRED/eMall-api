@@ -1,6 +1,8 @@
 const Store = require('../../models/seller/Store');
 const StorePage = require('../../models/seller/StorePage');
 const Product = require('../../models/seller/product/Product');
+const Order = require('../../models/orders/Order');
+const StoreOrder = require('../../models/orders/StoreOrder');
 const Category = require('../../models/categorization/Category');
 
 exports.getStore = (req, res, next) => {
@@ -15,6 +17,14 @@ exports.getStore = (req, res, next) => {
             select: 'firstName lastName image',
         }
     })
+    .then(resp => res.json(resp))
+    .catch(err => next(err))
+}
+
+exports.getStorePage = (req, res, next) => {
+    console.log(req.params)
+    StorePage.findOne({store: req.params.id})
+    .populate('homeAds.product')
     .then(resp => res.json(resp))
     .catch(err => next(err))
 }
@@ -85,5 +95,74 @@ exports.updateStorePage = (req, res, next) => {
     console.log(req.body.page);
     StorePage.findOneAndUpdate({store: req.body.store}, req.body.page, {new: true})
     .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.getOrders = (req, res, next) => {
+    const store = req.body.store;
+    StoreOrder.find({store: store._id})
+    .populate('order')
+    .sort('status')
+    .populate('order.orders.product')
+    .then(resp => {
+        res.json(resp)
+    })
+    .catch(err => next(err));
+    // resp.orders = resp.orders.filter(option => option.product.store === store._id);
+        
+}
+
+exports.getOrderProducts = (req, res, next) => {
+    Order.findOne({_id: req.body.order})
+    .populate('orders')
+    .select('orders')
+    .then(resp => res.json(resp));
+}
+
+exports.updateOrder = (req, res, next) => {
+    const store = req.body.store;
+    console.log(`Updating store ${store._id}, with order ${req.body.order}, and status ${req.body.status}`)
+
+    Order.findOneAndUpdate({$and: [{'stores.id': store._id}, {_id: req.body.order}]})
+    .then(resp => {
+        Order.find({'stores.id': store._id})
+        .sort('status')
+        .populate('orders.product')
+        .then(orders => res.json(orders))
+        .catch(err => next(err));
+    })
+    .catch(err => next(err));
+
+    // Order.updateMany({$and: [{stores: store._id}, {_id: req.body.order}]}, {status: req.body.status})
+    // .then(resp => {
+    //     console.log('Congrats champ!, new order is', resp)
+    //     Order.find({stores: store._id})
+    //     .sort('status')
+    //     .populate('orders.product')
+    //     .then(orders => res.json(orders));
+    //     })
+    // .catch(err => next(err));
+}
+
+exports.getRevenueForOrder = (req, res, next) => {
+    const store = req.body.store;
+    console.log(req.body)
+    Order.findOne({_id: req.body.order, 'stores.id': store._id})
+    .populate('orders.product')
+    .then(resp => {
+        if(!resp) return res.json({total: 0})
+        let total = 0;
+        resp.orders.filter(order => {
+            const product = order.product;
+            let price = product.price;
+            product.options.map(option => {
+                const pickedOption = order.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
+                const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
+                price += pick.extraPrice || 0;
+            })
+            total += price;
+        })
+        res.json({total})
+    })
     .catch(err => next(err));
 }

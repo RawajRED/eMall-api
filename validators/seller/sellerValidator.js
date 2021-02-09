@@ -31,7 +31,14 @@ exports.validateSellerRegister = [
     check('seller.email')
         .exists().withMessage('Email should be provided').bail()
         .isEmail().withMessage('Please provide a valid email address').bail()
-        .normalizeEmail({gmail_remove_dots: false}),
+        .normalizeEmail({gmail_remove_dots: false})
+        .custom(value => {
+            console.log('testing email on ' + value)
+            return Seller.findOne({email: value}).then(seller => {
+                if (seller)
+                    return Promise.reject('Email already in use')
+            })
+        }),
 
     check('seller.password')
         .exists().withMessage("Password is missing").bail()
@@ -75,6 +82,7 @@ exports.validateSeller = [
         .isEmail().withMessage('Please provide a valid email address').bail()
         .normalizeEmail({gmail_remove_dots: false})
         .custom(value => {
+            console.log('testing email on ' + value)
             return Seller.findOne({email: value}).then(seller => {
                 if (seller)
                     return Promise.reject('Email already in use')
@@ -109,7 +117,9 @@ exports.authenticateSeller = (req, res, next) => {
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
         if(err)
             return next({status: err.status, message: err.message})
-        req.body.payload = decoded;
+        req.body.store = decoded.seller.store;
+        delete decoded.seller.store;
+        req.body.seller = decoded.seller;
         next();
     })
 }

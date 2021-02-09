@@ -36,7 +36,7 @@ exports.createStoreAndSellerEmail = (req, res, next) => {
             Seller.create(seller)
             .then(seller => seller.toJSON())
             .then(seller => res.json({seller, store}))
-            .catch(err => next({status: 403, errors: [{msg: 'Email is already taken, try signing in', param: 'seller.email'}]}))
+            .catch(err => next(err))
         })
         .catch(err => next({status: 500, message: 'Internal Server Error'}))
     })

@@ -61,11 +61,10 @@ const storeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'StoreReview'
     }],
-    reviews: [{
-        type: Schema.Types.ObjectId,
-        ref: 'StoreReview'
-    }],
-    credit: Number,
+    credit: {
+        type: Number,
+        default: 0
+    },
     facebookPage: String,
     website: String,
     bankInfo: String

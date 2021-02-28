@@ -27,7 +27,17 @@ const sellerSchema = new Schema({
     languagePref: {
         type: Number,
         default: 0
-    }
+    },
+    /**
+     * ? Authority Levels
+     * * 0 - Manage Members
+     * * 1 - Edit Store
+     * * 2 - Edit Products
+     * * 3 - Edit ads
+     * * 4 - Withdraw funds
+     * * 5 - Edit Page
+     */
+    authorities: [Number]
 });
 
 sellerSchema.post('save', function(doc){

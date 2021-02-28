@@ -36,6 +36,7 @@ exports.getProductById = (req, res, next) => {
         }
     })
     .populate('variants')
+    .populate('dealOfTheDay')
     .then(resp => {
         if(!resp)
             return next({status: 404, message: 'Product not found'})
@@ -69,6 +70,7 @@ exports.getSimilarProducts = (req, res, next) => {
 }
 
 exports.getStoreProducts = (req, res, next) => {
+    console.log('getting store param shit', req.params.id)
     Product.find({store: req.params.id})
     .then(resp => res.json(resp))
     .catch(err => next(err));

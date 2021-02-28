@@ -1,10 +1,12 @@
 const Client = require('../../models/client/Client');
 const Cart = require('../../models/client/Cart');
+const Product = require('../../models/seller/product/Product');
 const Wishlist = require('../../models/client/Wishlist');
 const ProductReview = require('../../models/seller/product/ProductReview');
 const StoreReview = require('../../models/seller/StoreReview');
 const Order = require('../../models/orders/Order');
-const CancelRequest = require('../../models/orders/CancelRequest');
+const StoreOrder = require('../../models/orders/StoreOrder');
+const DealOfTheDay = require('../../models/other/DealOfTheDay');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const sendMail = require('../../sendgrid').sendMail;
@@ -102,10 +104,7 @@ exports.clientLoginEmail = (req, res, next) => {
             populate: 'store'
         }
     })
-    .populate({
-        path: 'cart',
-        populate: 'products.product'
-    })
+    .populate('cart')
     .then(resp => resp.toJSON())
     .then(client => {
         if(client)
@@ -185,17 +184,24 @@ exports.clientSubtotal = (req, res, next) => {
     .populate('products.product')
     .then(cart => {
         let subtotal = 0;
-        cart.products.map(cartProd => {
-            const product = cartProd.product;
-            let price = product.price;
-            product.options.map(option => {
-                const pickedOption = cartProd.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
-                const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
-                price += pick.extraPrice || 0;
+        const productIDs = cart.products.map(prod => prod.product._id);
+
+        // ! Find if "Deal Of The Day" exists
+        DealOfTheDay.find({product: {$in: productIDs}})
+        .then(deals => {
+            cart.products.map(cartProd => {
+                const product = cartProd.product;
+                const deal = deals.filter(deal => deal.product.toString() === cartProd.product._id.toString())[0];
+                let price = product.price;
+                product.options.map(option => {
+                    const pickedOption = cartProd.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
+                    const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
+                    price += pick.extraPrice || 0;
+                })
+                subtotal += (price * cartProd.quantity) * (deal ? (1-(deal.discount/100)) : 1) * (product.discount ? 1 - product.discount : 1);
             })
-            subtotal += (price * cartProd.quantity);
+            res.json({subtotal});
         })
-        res.json({subtotal});
     })
     .catch(err => next(err));
 }
@@ -209,19 +215,26 @@ exports.clientTotal = (req, res, next) => {
     .populate('products.product')
     .then(cart => {
         let subtotal = 0;
-        cart.products.map(cartProd => {
-            const product = cartProd.product;
-            let price = product.price;
-            product.options.map(option => {
-                const pickedOption = cartProd.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
-                const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
-                price += pick.extraPrice || 0;
+        const productIDs = cart.products.map(prod => prod.product._id);
+
+        // ! Find if "Deal Of The Day" exists
+        DealOfTheDay.find({product: {$in: productIDs}})
+        .then(deals => {
+            cart.products.map(cartProd => {
+                const product = cartProd.product;
+                const deal = deals.filter(deal => deal.product.toString() === cartProd.product._id.toString())[0];
+                let price = product.price;
+                product.options.map(option => {
+                    const pickedOption = cartProd.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
+                    const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
+                    price += pick.extraPrice || 0;
+                });
+                subtotal += (price * cartProd.quantity) * (deal ? 1-(deal.discount/100) : 1) * (product.discount ? 1 - product.discount : 1);
             })
-            subtotal += (price * cartProd.quantity);
+            const shipping = 80;
+            const total = subtotal + shipping;
+            res.json({subtotal, shipping, total});
         })
-        const shipping = 80;
-        const total = subtotal + shipping;
-        res.json({subtotal, shipping, total});
     })
     .catch(err => next(err));
 }
@@ -239,7 +252,6 @@ exports.getClientCart = (req, res, next) => {
     const client = req.body.client;
     Cart.findOne({client})
     .populate('products.product')
-    .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
     .catch(err => next({status: 404, message: "Couldn't find cart"}))
 }
@@ -261,16 +273,12 @@ exports.addToCart = (req, res, next) => {
     const options = req.body.options;
 
     Cart.findOne({client})
-    .populate('products.product')
     .then(_cart => {
-        console.log(client, product, _cart)
         if(_cart.products.filter(prod => prod.product._id === product).length){
-            console.log('we found it fam', _cart.products.map(prod => prod.product._id === product).length)
             return res.json(_cart);
         }
         else 
             Cart.findOneAndUpdate({client}, {$push: {products: {product, options, quantity}}}, {new: true})
-            .populate('products.product')
             .then(cart => res.json(cart))
             .catch(err => next(err))
     })
@@ -302,7 +310,6 @@ exports.updateCart = (req, res, next) => {
         'products.$.quantity': quantity,
         'products.$.options': options}
     }, {new: true})
-    .populate('products.product')
     .then((cart) => res.json(cart))
     .catch(err => next(err))
 }
@@ -316,22 +323,10 @@ exports.updateCart = (req, res, next) => {
 */
 exports.removeFromCart = (req, res, next) => {
     const client = req.body.client;
-    // const options = req.body.product.options.map(option => option._id);
     const product = req.body.product;
-
-    Cart.findOne({client: client})
-    .populate('products.product')
-    .then(_cart => {
-        if(!_cart.products.filter(prod => prod.product._id.toString() === product).length){
-            return res.json(_cart);
-        }
-        else {
-            Cart.findOneAndUpdate({client}, {$pull: {products: {product}}}, {new: true})
-            .populate('products.product')
-            .then(cart => res.json(cart))
-            .catch(err => next(err))
-        }
-    })
+    Cart.findOneAndUpdate({client}, {$pull: {products: product}}, {new: true})
+    .then(cart => res.json(cart))
+    .catch(err => next(err))
 }
 
 /* -------------------------------------------------------------------------- */
@@ -411,7 +406,10 @@ function filterUnique(value, index, self) {
 exports.getOrders = (req, res, next) => {
     const client = req.body.client;
     Order.find({client})
-    .populate('orders.product cancelRequest')
+    .populate({
+        path: 'storeOrders',
+        populate: 'orders.product'
+    })
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
@@ -420,6 +418,9 @@ exports.getOrders = (req, res, next) => {
 */
 exports.placeOrder = (req, res, next) => {
     const client = req.body.client;
+    const code = createId(7);
+
+    // ! Get Cart Content
     Cart.findOne({client})
     .populate({
         path: 'products.product',
@@ -431,19 +432,41 @@ exports.placeOrder = (req, res, next) => {
     })
     .then(cart => {
         const address = cart.client.addresses.filter(address => address.active)[0];
-        const order = {
-            orders: cart.products,
-            client,
-            address,
-            code: createId(7)
-        };
-        Order.create(order)
-        .then(resp => resp.toJSON())
-        .then(resp => {
-            Cart.findOneAndUpdate({client}, {products: []}, {new: true})
-            .then(cart => res.json({order: resp, cart}))
+        
+        // ! Create Orders and Get Deals
+        const prods = cart.products.map(product => product.product._id);
+
+        // ! Find Deals
+        DealOfTheDay.find({product: {$in: prods}})
+        .then(deals => {
+            let obj = {};
+            cart.products.forEach(product => {
+                const discount =  deals.filter(deal => deal.product.toString() === product.product._id.toString())[0];
+                if(obj.hasOwnProperty(product.product.store)){
+                    obj[product.product.store].push({...product._doc, discount: discount ? discount.discount : null});
+                }
+                else obj[product.product.store] = [{...product._doc, discount: discount ? discount.discount : null}];
+            });
+            let arr = [];
+            for (let store in obj) {
+                let orders = obj[store];
+                arr.push({store, orders, code, client, address});
+            }
+            StoreOrder.insertMany(arr)
+            .then(resp => {
+                const storeOrders = resp.map(storeOrder => storeOrder._id);
+                Order.create({
+                    storeOrders,
+                    code,
+                    address,
+                    client
+                })
+                .then(resp => resp.toJSON())
+                .then(resp => res.json(resp))
+                .catch(err => next(err));
+            })
+            .catch(err => next(err));
         })
-        .catch(err => next(err));
     })
 }
 /*
@@ -452,25 +475,27 @@ exports.placeOrder = (req, res, next) => {
 exports.cancelOrder = (req, res, next) => {
     const client = req.body.client;
     const order = req.body.order;
-    const stores = order.orders.map(order => order.product.store);
-    console.log({
-        client: order.client,
-        order: order._id,
-        stores
+    Order.findOneAndUpdate({client, _id: order._id}, {status: -1}, {new: true})
+    .then(resp => {
+        StoreOrder.findOneAndUpdate({code: resp.code}, {status: -1}, {new: true})
+        .then(resp => {
+            res.json(resp)
+        })
     })
-    CancelRequest.create({
-        client: order.client,
-        order: order._id,
-        stores
-    })
-    .then(resp => resp.toJSON())
-    .then(cancel => {
-        Order.findOneAndUpdate({client, _id: order._id}, {cancelRequest: cancel._id}, {new: true})
-        .populate('cancelRequest')
-        .then(resp => res.json(resp))
-        .catch(err => next(err))
-    })
-    .catch(err => next(err));
+    .catch(err => next(err))
+}
+
+/*
+?   Get Products in Order
+*/
+exports.getOrderProducts = (req, res, next) => {
+    const code = req.params.code;
+    StoreOrder.find({code})
+    .populate('orders.product')
+    .then(resp => {
+        // const products = resp.map(order => order.orders);
+        res.json([].concat.apply([], resp))
+    });
 }
 
 

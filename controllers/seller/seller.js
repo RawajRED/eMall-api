@@ -2,6 +2,7 @@ const Seller = require('../../models/seller/Seller');
 const Store = require('../../models/seller/Store');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { response } = require('express');
 
 const generateOtp = () => {
     return 'ABCDE';
@@ -54,13 +55,11 @@ exports.sellerSignInEmail = (req, res, next) => {
         if(seller) {
             bcrypt.compare(req.body.password, seller.password)
             .then(result => {
-                console.log('result', result)
                 if(result){
                     delete seller.password;
                     const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
                     const store = seller.store;
                     delete seller.store;
-                    console.log({seller, store, token, type: 'store'})
                     return res.json({seller, store, token, type: 'store'})
                 } else throw new Error();
             })
@@ -112,5 +111,43 @@ exports.sellerSignInFacebook = (req, res, next) => {
 exports.sellerEditStore = (req, res, next) => {
     Store.findOneAndUpdate({_id: req.body._id}, req.body.data, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: 'Store not found'}))
+    .catch(err => next(err));
+}
+
+exports.getSellers = (req, res, next) => {
+    const store = req.body.store;
+    Seller.find({store: store._id})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.sellerCreateMember = (req, res, next) => {
+    const store = req.body.store;
+    const member = req.body.member;
+
+    const saltRounds = 10;
+    bcrypt.hash(member.password, saltRounds)
+    .then(memberPass => {
+        Seller.create({
+            store: store._id,
+            name: member.name,
+            email: member.email,
+            title: member.title,
+            password: memberPass,
+            phone: member.phone,
+            authorities: member.authorities
+        })
+        .then(() => {
+            Seller.find({store: store._id})
+            .then(resp => res.json(resp))
+            .catch(err => next(err));
+        })
+        .catch(err => next(err));
+    });
+}
+
+exports.sellerUpdateMember = (req, res, next) => {
+    Seller.findOneAndUpdate({_id: req.body.member._id}, req.body.member, {new: true})
+    .then(resp => res.json(resp))
     .catch(err => next(err));
 }

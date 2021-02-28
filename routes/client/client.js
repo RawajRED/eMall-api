@@ -20,6 +20,8 @@ router.delete('/wishlist', clientValidators.clientIsLoggedIn, client.removeFromW
 router.get('/orders', clientValidators.clientIsLoggedIn, client.getOrders)
 router.get('/place-order', clientValidators.clientIsLoggedIn, client.placeOrder);
 router.put('/cancel-order', clientValidators.clientIsLoggedIn, client.cancelOrder);
+router.get('/order-products/:code', clientValidators.clientIsLoggedIn, client.getOrderProducts);
+
 
 // ? REVIEWS
 router.post('/product-review', clientValidators.clientIsLoggedIn, client.leaveProductReview);

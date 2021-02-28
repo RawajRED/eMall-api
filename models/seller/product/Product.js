@@ -75,7 +75,11 @@ const productSchema = new Schema({
             en: String,
             ar: String
         }
-    }]
+    }],
+    dealOfTheDay: {
+        type: Schema.Types.ObjectId,
+        ref: 'DealOfTheDay'
+    }
 });
 
 productSchema.post('save', doc => {

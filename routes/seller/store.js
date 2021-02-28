@@ -9,12 +9,16 @@ router.post('/find-by-subcategory', store.getStoreProductsBySubcategory);
 router.post('/find-similar-stores', store.getSimilarStores);
 
 router.get('/orders', authenticateSeller, store.getOrders);
-router.put('/order', authenticateSeller, store.updateOrder);
-router.get('/order-products', authenticateSeller, store.getOrderProducts);
+router.put('/order/status', authenticateSeller, store.updateOrderStatus);
 router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder)
+
 router.get('/page/:id', store.getStorePage);
 router.post('/page', store.createStorePage);
 router.put('/page', store.updateStorePage);
+
+router.get('/credit', authenticateSeller, store.getCredit);
+router.post('/request-withdrawal', authenticateSeller, store.requestWithdrawal);
+
 router.get('/:id', store.getStore);
 router.put('/', store.updateStore);
 

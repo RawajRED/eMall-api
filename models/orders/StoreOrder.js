@@ -17,7 +17,10 @@ const storeOrderSchema = new Schema({
      * ! -1 - Cancelled
      * ! -2 - Refunded
      */
-    status: Number,
+    status: {
+        type: Number,
+        default: 0
+    },
     orders: [{
         product: {
             type: Schema.Types.ObjectId,
@@ -34,7 +37,10 @@ const storeOrderSchema = new Schema({
            
            // ? Pick is the ID of the inner object, aka which suboption was picked from the options (e.g Small, Large, XXL)
            pick: Schema.Types.ObjectId
-        }]
+        }],
+        discount: Number,
+        dealOfTheDay: Number,
+        image: String
     }],
     client: {
         type: Schema.Types.ObjectId,
@@ -67,7 +73,6 @@ const storeOrderSchema = new Schema({
     deliveryTime: Date,
     refund: Boolean
 }, {timestamps: { createdAt: 'created_at'}});
-});
 
 const storeOrderModel = mongoose.model('StoreOrder', storeOrderSchema);
 module.exports = storeOrderModel;

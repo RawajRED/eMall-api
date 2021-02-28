@@ -9,6 +9,10 @@ router.post('/login', validateSellerLogin, seller.sellerSignInEmail);
 router.post('/login/facebook', seller.sellerSignInFacebook);
 router.post('/verify', validateSeller, (req, res) => res.status(200).json({done: true}))
 
+router.get('/members', authenticateSeller, seller.getSellers);
+router.put('/members', authenticateSeller, seller.sellerUpdateMember);
+router.post('/create-member', authenticateSeller, seller.sellerCreateMember);
+
 router.put('/store', authenticateSeller, seller.sellerEditStore);
 
 module.exports = router;

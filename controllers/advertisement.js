@@ -4,6 +4,7 @@ const BannerAd = require('../models/other/BannerAd');
 const DealsOfTheDay = require('../models/other/DealOfTheDay');
 const Store = require('../models/seller/Store');
 const Product = require('../models/seller/product/Product');
+const FeaturedProduct = require('../models/other/FeaturedProduct');
 
 /* -------------------------------------------------------------------------- */
 /*                                  Main Ads                                  */
@@ -228,4 +229,18 @@ exports.createDealOfTheDay = (req, res, next) => {
             })
         }
     })
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Featured Products                             */
+/* -------------------------------------------------------------------------- */
+
+exports.getFeaturedProducts = (req, res, next) => {
+    FeaturedProduct.find({})
+    .populate({
+        path: 'product',
+        populate: 'store'
+    })
+    .limit(5)
+    .then(resp => res.json(resp));
 }

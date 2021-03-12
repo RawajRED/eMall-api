@@ -1,4 +1,5 @@
 const Admin = require('../../models/admin/Admin');
+const FeaturedProduct = require('../../models/other/FeaturedProduct');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -23,6 +24,7 @@ exports.adminLoginUsername = (req, res, next) => {
     })
     .catch(err => {console.log(err);next({status: 400, message: 'Username not found'})})
 }
+
 exports.adminLogout = (req, res, next) => {
     var token = req.body.token || req.query.token || req.headers['x-access-token'];
     if (token) { 
@@ -31,4 +33,15 @@ exports.adminLogout = (req, res, next) => {
         res.json({ success: false, message: 'Not Logged in' });
     }
 
+}
+
+exports.addFeaturedProduct = (req, res, next) => {
+    FeaturedProduct.create({product: req.body.product})
+    .then(resp => resp.toJSON())
+    .then(resp => res.json(resp));
+}
+
+exports.removeFeaturedProduct = (req, res, next) => {
+    FeaturedProduct.findOneAndDelete({product: req.body.product})
+    .then(resp => res.json(resp));
 }

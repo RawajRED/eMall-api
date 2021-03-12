@@ -6,39 +6,39 @@ const jwt = require('jsonwebtoken');
 // TODO: Add languages to validation message
 exports.validateClientRegisterEmail = [
         check('firstName')
-            .exists().withMessage('First Name should be provided').bail()
+            .exists().withMessage({en: 'First Name should be provided', ar: 'يجب تقديم الاسم الأول'}).bail()
             .isString()
-            .isAlphanumeric().withMessage('First Name should be alphanumeric').bail()
-            .isLength({min: 2, max: 20}).withMessage('First Name should be between 2 and 20 characters'),
+            .isAlphanumeric().withMessage({en: 'First Name should be alphanumeric', ar: 'يجب أن يكون الاسم الأول أبجديًا رقميًا'}).bail()
+            .isLength({min: 2, max: 20}).withMessage({en: 'First Name should be between 2 and 20 characters', ar: 'يجب أن يتراوح الاسم الأول بين 2 و 20 حرفًا'}),
         
 
         check('lastName')
-            .exists().withMessage('Last Name is missing').bail()
+            .exists().withMessage({en: 'Last Name is missing', ar: 'الاسم الأخير مفقود'}).bail()
             .isString()
-            .isAlphanumeric().withMessage('Last Name should not contain special characters').bail()
-            .isLength({min: 3, max: 30}).withMessage('Last name should be between 3 and 30 characters'),
+            .isAlphanumeric().withMessage({en: 'Last Name should not contain special characters', ar: 'يجب ألا يحتوي اسم العائلة على أحرف خاصة'}).bail()
+            .isLength({min: 3, max: 30}).withMessage({en: 'Last name should be between 3 and 30 characters', ar: 'يجب أن يتراوح اسم العائلة بين 3 و 30 حرفًا'}),
         
 
         check('email')
-            .exists().withMessage("Email is missing").bail()
-            .isEmail().withMessage('Invalid Email').bail()
+            .exists().withMessage({en: 'Email is missing', ar: 'البريد الإلكتروني مفقود'}).bail()
+            .isEmail().withMessage({en: 'Invalid Email', ar: 'بريد إلكتروني خاطئ'}).bail()
             .normalizeEmail({gmail_remove_dots: false})
             .custom((value) => {
                 return Client.findOne({email: value}).then(client => {
                     if (client)
-                        return Promise.reject('Email already in use')
+                        return Promise.reject({en: 'Email already in use', ar: 'البريد الاليكتروني قيد الاستخدام'})
                 })
             }),
         
 
         check('phone')
-            .exists().withMessage('Phone number is missing').bail(),
+            .exists().withMessage({en: 'Phone number is missing', ar: 'رقم الهاتف مفقود'}).bail(),
         
 
         check('password')
-            .exists().withMessage("Password is missing").bail()
+            .exists().withMessage({en: "Password is missing", ar: 'كلمة المرور مفقودة'}).bail()
             .isString()
-            .isLength({min: 8, max: 30}).withMessage('Password should be between 8 and 30 characters').bail(),
+            .isLength({min: 8, max: 30}).withMessage({en: 'Password should be between 8 and 30 characters', ar: 'يجب أن تكون كلمة المرور بين 8 و 30 حرفًا'}).bail(),
         
 
         (req, res, next) => {
@@ -51,13 +51,13 @@ exports.validateClientRegisterEmail = [
 
 exports.validateClientLoginEmail = [
     check('email')
-        .exists().withMessage('Email should be provided').bail()
-        .isEmail().withMessage('Email format is incorrect').bail()
+        .exists().withMessage({en: 'Email should be provided', ar: 'يجب تقديم البريد الإلكتروني'}).bail()
+        .isEmail().withMessage({en: 'Email format is incorrect', ar: 'تنسيق البريد الإلكتروني غير صحيح'}).bail()
         .normalizeEmail({gmail_remove_dots: false}),
     check('password')
-        .exists().withMessage("Password is missing").bail()
+        .exists().withMessage({en: 'Password is missing', ar: 'كلمة المرور مفقودة'}).bail()
         .isString()
-        .isLength({min: 8, max: 20}).withMessage("Password is too short (8 to 20 characters)"),
+        .isLength({min: 8, max: 20}).withMessage({en: 'Password is too short (8 to 20 characters)', ar: 'كلمة المرور قصيرة جدًا (من 8 إلى 20 حرفًا)'}),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())

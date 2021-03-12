@@ -111,7 +111,7 @@ exports.clientLoginEmail = (req, res, next) => {
             bcrypt.compare(req.body.password, client.password, (err, result) => {
                 delete client.password;
                 if(err)
-                    return next({status: 500, message: 'Incorrect Email or Password'});
+                    return next({status: 500, message: {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}});
                 if(result){
                     if(client.verified){
                         const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
@@ -136,11 +136,28 @@ exports.clientLoginEmail = (req, res, next) => {
                         // });
                     }
                 }
-                else next({message: 'Incorrect Email or Password', status: 401});
+                else next({message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}, status: 401});
             })
-        else next({status: 404, message: 'Incorrect Email or Password'})
+        else next({status: 404, message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}})
     })
-    .catch(err => next({status: 400, message: 'Incorrect Email or Password'}))
+    .catch(err => next({status: 400, message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}}))
+}
+
+exports.clientLoginToken = (req, res, next) => {
+    Client.findOne({_id: req.body.client})
+    .populate({
+        path: 'wishlist',
+        populate: {
+            path: 'products',
+            populate: 'store'
+        }
+    })
+    .populate('cart')
+    .then(client => {
+        const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
+        return res.json({client, token, type: 'client'})
+    })
+    .catch(err => next(err));
 }
 
 exports.clientVerifyOtp = (req, res, next) => {
@@ -533,6 +550,26 @@ exports.leaveStoreReview = (req, res, next) => {
 
 exports.productReviewHelpful = (req, res, next) => {
     
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   PROFILE                                  */
+/* -------------------------------------------------------------------------- */
+exports.getProfile = (req, res, next) => {
+    const client = req.body.client;
+    Client.findOne({_id: client})
+    .select('email firstName lastName phone')
+    .then(resp => {
+        res.json(resp)
+    })
+    .catch(err => next(err))
+}
+
+exports.updateProfile = (req, res, next) => {
+    const client = req.body.client;
+    Client.findOneAndUpdate({_id: client}, req.body, {new: true})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
 }
 
 /* -------------------------------------------------------------------------- */

@@ -27,10 +27,14 @@ router.get('/order-products/:code', clientValidators.clientIsLoggedIn, client.ge
 router.post('/product-review', clientValidators.clientIsLoggedIn, client.leaveProductReview);
 router.post('/store-review', clientValidators.clientIsLoggedIn, client.leaveStoreReview);
 
+// ? PROFILE
+router.get('/profile', clientValidators.clientIsLoggedIn, client.getProfile);
+router.put('/profile', clientValidators.clientIsLoggedIn, client.updateProfile);
 
 // ? CLIENT GENERAL
 router.post('/register', clientValidators.validateClientRegisterEmail, client.clientRegisterEmail);
 router.post('/login', clientValidators.validateClientLoginEmail, client.clientLoginEmail);
+router.get('/login/token', clientValidators.clientIsLoggedIn, client.clientLoginToken);
 router.post('/login/otp', client.clientVerifyOtp);
 router.post('/login/facebook', client.clientLoginFacebook);
 router.get('/subtotal', clientValidators.clientIsLoggedIn, client.clientSubtotal);

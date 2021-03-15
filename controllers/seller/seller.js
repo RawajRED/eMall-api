@@ -2,7 +2,6 @@ const Seller = require('../../models/seller/Seller');
 const Store = require('../../models/seller/Store');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { response } = require('express');
 
 const generateOtp = () => {
     return 'ABCDE';
@@ -12,7 +11,8 @@ exports.createStoreAndSellerEmail = (req, res, next) => {
     const store = {
         title: req.body.store.title,
         description: req.body.store.description,
-        categories: req.body.store.categories
+        categories: req.body.store.categories,
+        otherCategory: req.body.store.otherCategory
     }
     Store.create(store)
     .then(res => res.toJSON())
@@ -108,6 +108,43 @@ exports.sellerSignInFacebook = (req, res, next) => {
     })
 }
 
+exports.sellerForgotPassword = (req, res, next) => {
+    const otp = createId(4);
+    Seller.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
+    .then(seller => {
+        console.log(seller)
+        res.json({confirm: true})
+    })
+    .catch(err => next(err));
+}
+
+exports.sellerChangePassword = (req, res, next) => {
+    Seller.findOne({email: req.body.email, resetOtp: req.body.otp})
+    .then(seller => {
+        if(!seller) return res.json({confirmed: false})
+        const password = req.body.password;
+        const saltRounds = 10;
+        bcrypt.hash(password, saltRounds, (err, hash) => {
+            if(err) throw new Error(err);
+            Seller.findOneAndUpdate({_id: seller._id}, {password: hash})
+            .then(() => {
+                res.json({confirmed: true});
+            })
+        });
+    })
+    .catch(err => next(err));
+}
+
+exports.sellerCheckOtp = (req, res, next) => {
+    Seller.findOne({email: req.body.email})
+    .then(seller => {
+        if(seller.resetOtp === req.body.otp.toUpperCase())
+            return res.json({confirmed: true})
+        return res.json({confirmed: false})
+    })
+    .catch(err => next(err));
+}
+
 exports.sellerEditStore = (req, res, next) => {
     Store.findOneAndUpdate({_id: req.body._id}, req.body.data, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: 'Store not found'}))
@@ -151,3 +188,13 @@ exports.sellerUpdateMember = (req, res, next) => {
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
+
+const createId = (length) => {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var charactersLength = characters.length;
+    for ( let i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }

@@ -19,6 +19,7 @@ const clientSchema = new Schema({
     country: String,
     city: String,
     phone: String,
+    resetOtp: String,
     email: {
         type: String,
         unique: true

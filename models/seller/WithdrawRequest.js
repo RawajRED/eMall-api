@@ -11,7 +11,6 @@ const withdrawRequestSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Seller'
     },
-    amount: Number,
     fulfilled: {
         type: Boolean,
         default: false

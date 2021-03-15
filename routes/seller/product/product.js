@@ -8,6 +8,7 @@ const { validateAddProduct } = require('../../../validators/product/productValid
 router.post('/similar-products', product.getSimilarProducts);
 router.post('/more-from-seller', product.getMoreFromSeller);
 router.get('/store/:id', product.getStoreProducts);
+router.get('/product-variant/:id', productVariant.getVariant);
 router.post('/variant', productVariant.createProductVariant);
 router.get('/variant/:id', productVariant.getProductVariant);
 router.post('/find', product.findProduct);

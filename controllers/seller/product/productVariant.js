@@ -1,4 +1,5 @@
 const ProductVariant = require('../../../models/seller/product/ProductVariant');
+const Product = require('../../../models/seller/product/Product');
 
 // Product Variants
 exports.getProductVariant = (req, res, next) => {
@@ -6,6 +7,17 @@ exports.getProductVariant = (req, res, next) => {
     .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
     .catch(err => next(err));    
+}
+
+exports.getVariant = (req, res, next) => {
+    console.log('getting vars')
+    Product.findOne({_id: req.params.id})
+    .then(prod => {
+        ProductVariant.findOne({_id: prod.variants})
+        .populate('products.product')
+        .then(resp => res.json(resp));
+    })
+    .catch(err => next(err));
 }
 
 exports.createProductVariant = (req, res, next) => {
@@ -20,6 +32,11 @@ exports.createProductVariant = (req, res, next) => {
     }
     ProductVariant.create({title, products: [{product, variant}]})
     .then(resp => resp.toJSON())
-    .then(resp => res.json(resp))
+    .then(resp => {
+        Product.findOneAndUpdate({_id: product}, {variants: resp._id}, {new: true})
+        .then(prod => {
+            res.json({variant: resp, product: prod})
+        })
+    })
     .catch(err => next(err));
 }

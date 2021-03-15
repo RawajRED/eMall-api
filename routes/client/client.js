@@ -31,12 +31,18 @@ router.post('/store-review', clientValidators.clientIsLoggedIn, client.leaveStor
 router.get('/profile', clientValidators.clientIsLoggedIn, client.getProfile);
 router.put('/profile', clientValidators.clientIsLoggedIn, client.updateProfile);
 
+// ? PAYMENTS
+router.get('/payments', clientValidators.clientIsLoggedIn, client.getPayments);
+
 // ? CLIENT GENERAL
 router.post('/register', clientValidators.validateClientRegisterEmail, client.clientRegisterEmail);
 router.post('/login', clientValidators.validateClientLoginEmail, client.clientLoginEmail);
 router.get('/login/token', clientValidators.clientIsLoggedIn, client.clientLoginToken);
 router.post('/login/otp', client.clientVerifyOtp);
 router.post('/login/facebook', client.clientLoginFacebook);
+router.post('/forgot-password', client.clientForgotPassword);
+router.post('/change-password', client.clientChangePassword);
+router.post('/forgot-password/check-otp', client.clientCheckOtp);
 router.get('/subtotal', clientValidators.clientIsLoggedIn, client.clientSubtotal);
 router.get('/total', clientValidators.clientIsLoggedIn, client.clientTotal);
 router.put('/', clientValidators.clientIsLoggedIn, client.clientUpdateInfo);

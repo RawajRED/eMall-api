@@ -40,7 +40,8 @@ const orderSchema = new Schema({
         default: 0
     },
     cancel: Boolean,
-    refund: Boolean
+    refund: Boolean,
+    total: Number
 }, {timestamps: { createdAt: 'created_at'}});
 
 

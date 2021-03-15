@@ -9,4 +9,8 @@ router.post('/', subcategories.createSubcategory);
 router.put('/', subcategories.editSubcategory);
 router.delete('/', subcategories.deleteSubcategory);
 
+router.get('/filters/:subcategory', subcategories.getFilters);
+router.post('/filters', subcategories.createFilter);
+
+
 module.exports = router;

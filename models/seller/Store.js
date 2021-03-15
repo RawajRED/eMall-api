@@ -56,6 +56,7 @@ const storeSchema = new Schema({
         type: Boolean,
         default: false
     },
+    otherCategory: String,
     logo: String,
     reviews: [{
         type: Schema.Types.ObjectId,

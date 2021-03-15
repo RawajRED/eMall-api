@@ -24,6 +24,7 @@ const sellerSchema = new Schema({
     password: String,
     phone: String,
     image: String,
+    resetOtp: String,
     languagePref: {
         type: Number,
         default: 0

@@ -21,14 +21,16 @@ exports.createMainAd = (req, res, next) => {
     }
     MainAd.create(mainAd)
     .then(resp => resp.toJSON())
-    .then(resp => res.json(resp))
+    .then(resp => {
+        res.json(resp)
+    })
     .catch(err => next(err));
 }
 
 exports.getMainAds = (req, res, next) => {
-    MainAd
+    BannerAd
         .find()
-        .then(resp => res.json(resp))
+        .then(resp => res.json(shuffle([...resp, ...resp])))
         .catch(err => next(err));
 }
 
@@ -244,3 +246,27 @@ exports.getFeaturedProducts = (req, res, next) => {
     .limit(5)
     .then(resp => res.json(resp));
 }
+
+
+/* -------------------------------------------------------------------------- */
+/*                              Helper Functions                              */
+/* -------------------------------------------------------------------------- */
+
+function shuffle(array) {
+    let currentIndex = array.length, temporaryValue, randomIndex;
+  
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+  
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+  
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+  
+    return array;
+  }

@@ -38,6 +38,10 @@ const productSchema = new Schema({
         ref: 'Subcategory',
         required: true
     },
+    filter: {
+        type: Schema.Types.ObjectId,
+        ref: 'Filter',
+    },
     discount: Number,
     discountPeriod: Date,
     reviews: [{

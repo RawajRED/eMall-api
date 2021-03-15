@@ -17,6 +17,10 @@ router.post('/page', store.createStorePage);
 router.put('/page', store.updateStorePage);
 
 router.get('/credit', authenticateSeller, store.getCredit);
+router.get('/month-sales', authenticateSeller, store.getMonthlySales);
+router.get('/previous-sales', authenticateSeller, store.getPreviousSales);
+router.get('/pending-funds', authenticateSeller, store.getPendingFunds);
+router.get('/payments', authenticateSeller, store.getPayments);
 router.post('/request-withdrawal', authenticateSeller, store.requestWithdrawal);
 
 router.get('/:id', store.getStore);

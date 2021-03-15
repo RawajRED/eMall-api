@@ -1,6 +1,6 @@
 const Client = require('../../models/client/Client');
 const Cart = require('../../models/client/Cart');
-const Product = require('../../models/seller/product/Product');
+const ClientPayment = require('../../models/client/ClientPayment');
 const Wishlist = require('../../models/client/Wishlist');
 const ProductReview = require('../../models/seller/product/ProductReview');
 const StoreReview = require('../../models/seller/StoreReview');
@@ -177,6 +177,43 @@ exports.clientVerifyOtp = (req, res, next) => {
             return next({status: 400, message: 'Incorrect PIN'})
         }
     })
+}
+
+exports.clientForgotPassword = (req, res, next) => {
+    const otp = createId(4);
+    Client.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
+    .then(client => {
+        console.log(client);
+        res.json({confirm: true})
+    })
+    .catch(err => next(err));
+}
+
+exports.clientChangePassword = (req, res, next) => {
+    Client.findOne({email: req.body.email, resetOtp: req.body.otp})
+    .then(client => {
+        if(!client) return res.json({confirmed: false})
+        const password = req.body.password;
+        const saltRounds = 10;
+        bcrypt.hash(password, saltRounds, (err, hash) => {
+            if(err) throw new Error(err);
+            Client.findOneAndUpdate({_id: client._id}, {password: hash})
+            .then(() => {
+                res.json({confirmed: true});
+            })
+        });
+    })
+    .catch(err => next(err));
+}
+
+exports.clientCheckOtp = (req, res, next) => {
+    Client.findOne({email: req.body.email})
+    .then(client => {
+        if(client.resetOtp === req.body.otp.toUpperCase())
+            return res.json({confirmed: true})
+        return res.json({confirmed: false})
+    })
+    .catch(err => next(err));
 }
 
 exports.clientUpdateInfo = (req, res, next) => {
@@ -427,6 +464,7 @@ exports.getOrders = (req, res, next) => {
         path: 'storeOrders',
         populate: 'orders.product'
     })
+    .sort({'created_at': -1})
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
@@ -441,7 +479,7 @@ exports.placeOrder = (req, res, next) => {
     Cart.findOne({client})
     .populate({
         path: 'products.product',
-        select: 'options price store'
+        select: 'options price store discount'
     })
     .populate({
         path: 'client',
@@ -459,24 +497,43 @@ exports.placeOrder = (req, res, next) => {
             let obj = {};
             cart.products.forEach(product => {
                 const discount =  deals.filter(deal => deal.product.toString() === product.product._id.toString())[0];
+                console.log('product discount is', product.product.discount, 'while the doc is apparently', product._doc)
                 if(obj.hasOwnProperty(product.product.store)){
-                    obj[product.product.store].push({...product._doc, discount: discount ? discount.discount : null});
+                    obj[product.product.store].push({...product._doc, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null});
                 }
-                else obj[product.product.store] = [{...product._doc, discount: discount ? discount.discount : null}];
+                else obj[product.product.store] = [{...product._doc, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null}];
             });
             let arr = [];
             for (let store in obj) {
                 let orders = obj[store];
                 arr.push({store, orders, code, client, address});
             }
+
+            // ! Get Total
+            let subtotal = 0;
+            cart.products.map(cartProd => {
+                const product = cartProd.product;
+                const deal = deals.filter(deal => deal.product.toString() === cartProd.product._id.toString())[0];
+                let price = product.price;
+                product.options.map(option => {
+                    const pickedOption = cartProd.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
+                    const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
+                    price += pick.extraPrice || 0;
+                })
+                subtotal += (price * cartProd.quantity) * (deal ? (1-(deal.discount/100)) : 1) * (product.discount ? 1 - product.discount : 1);
+            })
+            let total = subtotal + 80;
             StoreOrder.insertMany(arr)
             .then(resp => {
                 const storeOrders = resp.map(storeOrder => storeOrder._id);
+                cart.products = [];
+                cart.save();
                 Order.create({
                     storeOrders,
                     code,
                     address,
-                    client
+                    client,
+                    total
                 })
                 .then(resp => resp.toJSON())
                 .then(resp => res.json(resp))
@@ -528,8 +585,7 @@ exports.leaveProductReview = (req, res, next) => {
         review: req.body.review
     };
 
-    ProductReview.create(review)
-    .then(resp => resp.toJSON())
+    ProductReview.findOneAndUpdate({client: req.body.client, product: req.body.product}, review, {upsert: true, new: true})
     .then(productReview => res.json(productReview))
     .catch(err => next(err));
 }
@@ -569,6 +625,18 @@ exports.updateProfile = (req, res, next) => {
     const client = req.body.client;
     Client.findOneAndUpdate({_id: client}, req.body, {new: true})
     .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  PAYMENTS                                  */
+/* -------------------------------------------------------------------------- */
+exports.getPayments = (req, res, next) => {
+    ClientPayment.find({client: req.body.client})
+    .populate('order')
+    .then(resp => {
+        res.json(resp);
+    })
     .catch(err => next(err));
 }
 

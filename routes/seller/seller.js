@@ -8,6 +8,9 @@ router.post('/register', validateSellerRegister, seller.createStoreAndSellerEmai
 router.post('/login', validateSellerLogin, seller.sellerSignInEmail);
 router.post('/login/facebook', seller.sellerSignInFacebook);
 router.post('/verify', validateSeller, (req, res) => res.status(200).json({done: true}))
+router.post('/forgot-password', seller.sellerForgotPassword);
+router.post('/change-password', seller.sellerChangePassword);
+router.post('/forgot-password/check-otp', seller.sellerCheckOtp);
 
 router.get('/members', authenticateSeller, seller.getSellers);
 router.put('/members', authenticateSeller, seller.sellerUpdateMember);

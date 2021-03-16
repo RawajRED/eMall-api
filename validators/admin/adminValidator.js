@@ -23,7 +23,7 @@ exports.validateAdminLoginUsername = [
 
 exports.adminIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
-    jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+    jwt.verify(token, "%]dh^u2))d]v)w{d*IGj6S79h~tr|-O!y~_/8g=(UZ}OJKm!|fl6.$3F(827Zw<", (err, decoded) => {
         if(err){
             return next({status: 400, message: 'Invalid Token'})
         }

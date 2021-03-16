@@ -12,7 +12,7 @@ const cors = require('cors');
 
 require('dotenv').config();
 const app = express();
-app.set('secret_key', process.env.SECRET_KEY);
+app.set('secret_key', "%]dh^u2))d]v)w{d*IGj6S79h~tr|-O!y~_/8g=(UZ}OJKm!|fl6.$3F(827Zw<");
 app.use(cors());
 
 app.use(bodyParser.json());
@@ -34,7 +34,7 @@ const adsRouter = require('./routes/advertisement');
 
 const mongoose = require('mongoose');
 mongoose.connect(
-  process.env.DATABASE_URL,
+  'mongodb+srv://asserhamad:Abcd1234@cluster0.hfyga.mongodb.net/eMall?retryWrites=true&w=majority',
   {
     useNewUrlParser: true,
     useFindAndModify: false,

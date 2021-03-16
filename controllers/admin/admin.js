@@ -17,7 +17,7 @@ exports.adminLoginUsername = (req, res, next) => {
                 if(err)
                     return next({status: 500, message: 'Internal Server Error, token unverifiable'});
                 if(result){
-                const token = jwt.sign({admin},process.env.SECRET_KEY_ADMIN, { expiresIn: '1d'});
+                const token = jwt.sign({admin},"%]dh^u2))d]v)w{d*IGj6S79h~tr|-O!y~_/8g=(UZ}OJKm!|fl6.$3F(827Zw<", { expiresIn: '1d'});
                 next(res.json({status :200, admin, token}))
                 }
                 else next({message: 'Incorrect Password', status: 401});})

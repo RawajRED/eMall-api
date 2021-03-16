@@ -70,6 +70,22 @@ exports.sellerSignInEmail = (req, res, next) => {
     .catch(err => next({status: 403, errors: [{msg: `Incorrect email or password` }]}))
 }
 
+exports.sellerLoginToken = (req, res, next) => {
+    Seller.findOne({_id: req.body.seller._id})
+    .populate({
+        path: 'store',
+        select: 'approved logo title'
+    })
+    .then(seller => {
+        delete seller.password;
+        const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+        const store = seller.store;
+        delete seller.store;
+        return res.json({seller, store, token, type: 'store'})
+    })
+    .catch(err => next(err));
+}
+
 exports.sellerSignInFacebook = (req, res, next) => {
     Seller.findOne({facebookId: req.body.id})
     .populate({

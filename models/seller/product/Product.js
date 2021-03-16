@@ -70,6 +70,8 @@ const productSchema = new Schema({
     stock: Number,
     price: Number,
     currency: String,
+    extraText: Boolean,
+    extraImage: Boolean,
     specifications: [{
         title: {
             en: String,

@@ -305,7 +305,10 @@ exports.clientTotal = (req, res, next) => {
 exports.getClientCart = (req, res, next) => {
     const client = req.body.client;
     Cart.findOne({client})
-    .populate('products.product')
+    .populate({
+        path: 'products.product',
+        populate: 'dealOfTheDay'
+    })
     .then(resp => res.json(resp))
     .catch(err => next({status: 404, message: "Couldn't find cart"}))
 }
@@ -325,6 +328,7 @@ exports.addToCart = (req, res, next) => {
     const product = req.body.product;
     const quantity = req.body.quantity;
     const options = req.body.options;
+    const code = createId(7);
 
     Cart.findOne({client})
     .then(_cart => {
@@ -332,7 +336,7 @@ exports.addToCart = (req, res, next) => {
             return res.json(_cart);
         }
         else 
-            Cart.findOneAndUpdate({client}, {$push: {products: {product, options, quantity}}}, {new: true})
+            Cart.findOneAndUpdate({client}, {$push: {products: {product, options, quantity, code}}}, {new: true})
             .then(cart => res.json(cart))
             .catch(err => next(err))
     })
@@ -378,9 +382,18 @@ exports.updateCart = (req, res, next) => {
 exports.removeFromCart = (req, res, next) => {
     const client = req.body.client;
     const product = req.body.product;
-    Cart.findOneAndUpdate({client}, {$pull: {products: product}}, {new: true})
-    .then(cart => res.json(cart))
-    .catch(err => next(err))
+    const code = product.code
+    console.log(product, code)
+    Cart.findOne({client})
+    .then(async cart => {
+        console.log('the current cart products are', cart.products, 'with code', code, 'and filter', cart.products.filter(product => product.code !== code))
+        cart.products = cart.products.filter(product => product.code !== code);
+        await cart.save();
+        res.json(cart);
+    })
+    // Cart.findOneAndUpdate({client}, {$pull: {'products.code': product.code}}, {new: true})
+    // .then(cart => res.json(cart))
+    // .catch(err => next(err))
 }
 
 /* -------------------------------------------------------------------------- */

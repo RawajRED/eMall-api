@@ -133,10 +133,19 @@ exports.createStorePage = (req, res, next) => {
 }
 
 exports.updateStorePage = (req, res, next) => {
-    console.log(req.body.page);
-    StorePage.findOneAndUpdate({store: req.body.store}, req.body.page, {new: true})
-    .then(resp => res.json(resp))
-    .catch(err => next(err));
+    console.log(req.body);
+    StorePage.findOneAndUpdate({store: req.body.store._id}, {
+        coverImage: req.body.coverImage,
+        $set: {homeAds: req.body.homeAds},
+         }, {new: true, populate: 'homeAds.product'})
+    .then(resp => {
+        console.log('well, resp is', resp)
+        res.json(resp)
+    })
+    .catch(err => {
+        console.log('your err sir. is', err)
+        next(err)
+    });
 }
 
 exports.getOrders = (req, res, next) => {
@@ -232,28 +241,25 @@ exports.getPreviousSales = (req, res, next) => {
     console.log('ayy im getting it', date)
     const payments = [
         StorePayment.find({
-        created_at: {
-            $gte: new Date(date.getFullYear(), date.getMonth() - 3, 0),
-            $lte: new Date(date.getFullYear(), date.getMonth() - 3, 31) 
-        }
+            store: req.body.store,
+            created_at: {
+                $gte: new Date(date.getFullYear(), date.getMonth() - 2, 0),
+                $lte: new Date(date.getFullYear(), date.getMonth() - 2, 31) 
+            }
         }),
         StorePayment.find({
-        created_at: {
-            $gte: new Date(date.getFullYear(), date.getMonth() - 2, 0),
-            $lte: new Date(date.getFullYear(), date.getMonth() - 2, 31) 
-        }
+            store: req.body.store,
+            created_at: {
+                $gte: new Date(date.getFullYear(), date.getMonth() - 1, 0),
+                $lte: new Date(date.getFullYear(), date.getMonth() - 1, 31) 
+            }
         }),
         StorePayment.find({
-        created_at: {
-            $gte: new Date(date.getFullYear(), date.getMonth() - 1, 0),
-            $lte: new Date(date.getFullYear(), date.getMonth() - 1, 31) 
-        }
-        }),
-        StorePayment.find({
-        created_at: {
-            $gte: new Date(date.getFullYear(), date.getMonth(), 0),
-            $lte: new Date(date.getFullYear(), date.getMonth(), 31) 
-        }
+            store: req.body.store,
+            created_at: {
+                $gte: new Date(date.getFullYear(), date.getMonth(), 0),
+                $lte: new Date(date.getFullYear(), date.getMonth(), 31) 
+            }
         })
     ];
     Promise.all(payments)
@@ -266,6 +272,7 @@ exports.getPendingFunds = (req, res, next) => {
     const date = new Date();
     console.log('ayy im getting it', date)
     StorePayment.find({
+        store: req.body.store,
         created_at: {
             $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 14),
             $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate()+1) 

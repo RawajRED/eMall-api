@@ -6,6 +6,7 @@ const { validateSellerLogin, validateSellerRegister, validateStoreRegister, vali
 
 router.post('/register', validateSellerRegister, seller.createStoreAndSellerEmail);
 router.post('/login', validateSellerLogin, seller.sellerSignInEmail);
+router.get('/login/token', authenticateSeller, seller.sellerLoginToken);
 router.post('/login/facebook', seller.sellerSignInFacebook);
 router.post('/verify', validateSeller, (req, res) => res.status(200).json({done: true}))
 router.post('/forgot-password', seller.sellerForgotPassword);

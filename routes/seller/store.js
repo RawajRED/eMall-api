@@ -14,7 +14,7 @@ router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder)
 
 router.get('/page/:id', store.getStorePage);
 router.post('/page', store.createStorePage);
-router.put('/page', store.updateStorePage);
+router.put('/page', authenticateSeller, store.updateStorePage);
 
 router.get('/credit', authenticateSeller, store.getCredit);
 router.get('/month-sales', authenticateSeller, store.getMonthlySales);

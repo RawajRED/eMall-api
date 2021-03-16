@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Client = require('../client/Client');
+const {ObjectId} = require('mongodb'); 
 
 const cartSchema = new Schema({
     client: {
@@ -24,6 +24,7 @@ const cartSchema = new Schema({
             // ? Pick is the ID of the inner object, aka which suboption was picked from the options (e.g Small, Large, XXL)
             pick: Schema.Types.ObjectId
         }],
+        code: String
     }],
     subtotal: Number
 });

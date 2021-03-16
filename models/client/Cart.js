@@ -17,6 +17,8 @@ const cartSchema = new Schema({
             type: Number,
             default: 1
         },
+        image: String,
+        text: String,
         options: [{
              // ? Option is the ID of the outer option object (e.g Color, Size, etc..)
             option: Schema.Types.ObjectId,

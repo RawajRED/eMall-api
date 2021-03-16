@@ -328,6 +328,8 @@ exports.addToCart = (req, res, next) => {
     const product = req.body.product;
     const quantity = req.body.quantity;
     const options = req.body.options;
+    const text = req.body.text;
+    const image = req.body.image;
     const code = createId(7);
 
     Cart.findOne({client})
@@ -336,7 +338,7 @@ exports.addToCart = (req, res, next) => {
             return res.json(_cart);
         }
         else 
-            Cart.findOneAndUpdate({client}, {$push: {products: {product, options, quantity, code}}}, {new: true})
+            Cart.findOneAndUpdate({client}, {$push: {products: {product, options, quantity, text, image, code}}}, {new: true})
             .then(cart => res.json(cart))
             .catch(err => next(err))
     })
@@ -510,15 +512,15 @@ exports.placeOrder = (req, res, next) => {
             let obj = {};
             cart.products.forEach(product => {
                 const discount =  deals.filter(deal => deal.product.toString() === product.product._id.toString())[0];
-                console.log('product discount is', product.product.discount, 'while the doc is apparently', product._doc)
                 if(obj.hasOwnProperty(product.product.store)){
                     obj[product.product.store].push({...product._doc, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null});
                 }
-                else obj[product.product.store] = [{...product._doc, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null}];
+                else obj[product.product.store] = [{...product._doc, image: product.image, text: product.text, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null}];
             });
             let arr = [];
             for (let store in obj) {
                 let orders = obj[store];
+                console.log('orders are, ', orders);
                 arr.push({store, orders, code, client, address});
             }
 

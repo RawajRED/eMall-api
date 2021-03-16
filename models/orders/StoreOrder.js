@@ -40,7 +40,8 @@ const storeOrderSchema = new Schema({
         }],
         discount: Number,
         dealOfTheDay: Number,
-        image: String
+        image: String,
+        text: String
     }],
     client: {
         type: Schema.Types.ObjectId,

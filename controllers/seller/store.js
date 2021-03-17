@@ -36,6 +36,11 @@ exports.getStorePage = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.uploadPageImage = (req, res, next) => {
+    console.log('file', req.file, req.body);
+    res.json({ayy: 'lmao'})
+}
+
 exports.updateStore = (req, res, next) => {
     Store.findOneAndUpdate({_id: req.body._id}, req.body.details, {new: true})
     .then(resp => res.json(resp))

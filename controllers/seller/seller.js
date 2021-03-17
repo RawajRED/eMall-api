@@ -48,7 +48,8 @@ exports.sellerSignInEmail = (req, res, next) => {
     Seller.findOne({email: req.body.email})
     .populate({
         path: 'store',
-        select: 'approved logo title'
+        select: 'approved logo title page',
+        populate: {path: 'page', select: 'coverImage'}
     })
     .then(resp => resp.toJSON())
     .then(seller => {
@@ -74,7 +75,8 @@ exports.sellerLoginToken = (req, res, next) => {
     Seller.findOne({_id: req.body.seller._id})
     .populate({
         path: 'store',
-        select: 'approved logo title'
+        select: 'approved logo title page',
+        populate: {path: 'page', select: 'coverImage'}
     })
     .then(seller => {
         delete seller.password;
@@ -90,7 +92,8 @@ exports.sellerSignInFacebook = (req, res, next) => {
     Seller.findOne({facebookId: req.body.id})
     .populate({
         path: 'store',
-        select: 'approved logo title'
+        select: 'approved logo title page',
+        populate: {path: 'page', select: 'coverImage'}
     })
     .then(resp => {
         if(resp)

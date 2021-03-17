@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const store = require('../../controllers/seller/store');
 const { authenticateSeller } = require('../../validators/seller/sellerValidator');
+const { upload } = require('../../s3');
 
 router.get('/most-popular', store.getMostPopularStores);
 router.post('/find-by-category', store.getStoreProductsByCategory);
@@ -13,6 +14,7 @@ router.put('/order/status', authenticateSeller, store.updateOrderStatus);
 router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder)
 
 router.get('/page/:id', store.getStorePage);
+router.post('/page/upload', authenticateSeller, upload.single('photo'), store.uploadPageImage);
 router.post('/page', store.createStorePage);
 router.put('/page', authenticateSeller, store.updateStorePage);
 

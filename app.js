@@ -8,6 +8,7 @@ const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const cors = require('cors');
+const { upload } = require('./s3');
 
 
 require('dotenv').config();
@@ -74,6 +75,9 @@ app.use('/api/store', storeRouter);
 app.use('/api/product', productRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/advertisement', adsRouter);
+
+app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.location}));
+app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.location)));
 
 app.use(
   "/api",

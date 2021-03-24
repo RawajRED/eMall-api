@@ -613,8 +613,7 @@ exports.leaveStoreReview = (req, res, next) => {
         review: req.body.review
     }
 
-    StoreReview.create(review)
-    .then(resp => resp.toJSON())
+    StoreReview.findOneAndUpdate({client: req.body.client, store: req.body.store}, review, {upsert: true, new: true})
     .then(storeReview => res.json(storeReview))
     .catch(err => next(err));
 }

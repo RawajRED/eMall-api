@@ -45,6 +45,13 @@ exports.getProductById = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.findByCategory = (req, res ,next) => {
+    const category = req.params.id;
+    Product.find({category})
+    .then(products => res.json(products))
+    .catch(err => next(err)); 
+}
+
 exports.getMoreFromSeller = (req, res, next) => {
     const product = req.body;
     Product.find({$or: [
@@ -92,7 +99,8 @@ exports.findProduct = (req, res, next) => {
 }
 
 exports.updateProduct = (req, res, next) => {
-    Product.findOneAndUpdate({_id: req.body._id}, req.body, {new: true})
+    console.log(' o hi maerk')
+    Product.findOneAndUpdate({_id: req.body.product._id}, req.body.product, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: "Couldn't find the specificed Product"}))
     .catch(err => next(err));
 }

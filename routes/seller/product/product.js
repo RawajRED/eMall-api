@@ -11,9 +11,13 @@ router.get('/store/:id', product.getStoreProducts);
 router.get('/product-variant/:id', productVariant.getVariant);
 router.post('/variant', productVariant.createProductVariant);
 router.get('/variant/:id', productVariant.getProductVariant);
+
+router.get('/sms', productVariant.sms);
+
+router.get('/category/:id', product.findByCategory);
 router.post('/find', product.findProduct);
 router.post('/', authenticateSeller, validateAddProduct, product.createProduct);
-router.put('/', product.updateProduct);
+router.put('/', validateAddProduct, product.updateProduct);
 router.delete('/', product.deleteProduct);
 
 router.get('/:id', product.getProductById);

@@ -27,7 +27,11 @@ const categorySchema = new Schema({
         required: true
     },
     iconType: String,
-    banner: String
+    banner: String,
+    image: {
+        type: String,
+        default : 'https://emall-bucket.s3.us-east-2.amazonaws.com/19044368211578983122-128.png'
+    }
 });
 
 const categoryModel = mongoose.model('Category', categorySchema);

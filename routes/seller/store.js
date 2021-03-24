@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const store = require('../../controllers/seller/store');
 const { authenticateSeller } = require('../../validators/seller/sellerValidator');
+const clientValidators = require('../../validators/client/clientValidator');
 const { upload } = require('../../s3');
 
 router.get('/most-popular', store.getMostPopularStores);
@@ -11,12 +12,21 @@ router.post('/find-similar-stores', store.getSimilarStores);
 
 router.get('/orders', authenticateSeller, store.getOrders);
 router.put('/order/status', authenticateSeller, store.updateOrderStatus);
-router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder)
+router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder);
+
+router.get('/own-products', authenticateSeller, store.getOwnProducts);
+router.get('/popular-products', authenticateSeller, store.getPopularProducts)
 
 router.get('/page/:id', store.getStorePage);
 router.post('/page/upload', authenticateSeller, upload.single('photo'), store.uploadPageImage);
 router.post('/page', store.createStorePage);
 router.put('/page', authenticateSeller, store.updateStorePage);
+
+router.post('/views/add', clientValidators.clientIsLoggedIn, store.addView);
+router.get('/views', authenticateSeller, store.getViews);
+
+router.get('/reviews/:store', store.getReviews);
+router.get('/reviews/overview/:store', store.getReviewsOverview);
 
 router.get('/credit', authenticateSeller, store.getCredit);
 router.get('/month-sales', authenticateSeller, store.getMonthlySales);

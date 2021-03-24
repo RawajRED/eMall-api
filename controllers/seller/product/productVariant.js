@@ -1,5 +1,8 @@
 const ProductVariant = require('../../../models/seller/product/ProductVariant');
 const Product = require('../../../models/seller/product/Product');
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
 
 // Product Variants
 exports.getProductVariant = (req, res, next) => {
@@ -39,4 +42,16 @@ exports.createProductVariant = (req, res, next) => {
         })
     })
     .catch(err => next(err));
+}
+
+exports.sms = (req, res, next) => {
+    console.log(accountSid, authToken);
+    client.messages
+  .create({
+     body: 'Your verification code is AFDQL',
+     from: '+12255290371',
+     to: '+201140008042'
+   })
+  .then(message => console.log(message  ))
+  .catch(err => next(err));
 }

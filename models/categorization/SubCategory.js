@@ -24,7 +24,10 @@ const subcategorySchema = new Schema({
     },
     icon: String,
     iconType: String,
-    image: String,
+    image: {
+        type: String,
+        default : 'https://emall-bucket.s3.us-east-2.amazonaws.com/19044368211578983122-128.png'
+    },
     category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'

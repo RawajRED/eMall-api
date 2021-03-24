@@ -1,8 +1,11 @@
 const Store = require('../../models/seller/Store');
 const StorePage = require('../../models/seller/StorePage');
 const StorePayment = require('../../models/seller/StorePayment');
+const StoreReview = require('../../models/seller/StoreReview');
+const StoreView = require('../../models/seller/StoreView');
 const StoreOrder = require('../../models/orders/StoreOrder');
 const Order = require('../../models/orders/Order');
+const Product = require('../../models/seller/product/Product');
 const WithdrawRequest = require('../../models/seller/WithdrawRequest');
 // const StorePayments = require('../../models/');
 const cron = require('node-cron');
@@ -16,7 +19,6 @@ exports.getStore = (req, res, next) => {
     Store.findOne({_id: req.params.id})
     .select('categories subcategories title description page logo reviews')
     .populate('categories')
-    .populate('page')
     .populate({
         path: 'reviews',
         populate: {
@@ -24,7 +26,12 @@ exports.getStore = (req, res, next) => {
             select: 'firstName lastName image',
         }
     })
-    .then(resp => res.json(resp))
+    .then(resp => {
+        StorePage.findOne({store: req.params.id})
+        .then(page => {
+            res.json({...resp._doc, page})
+        })
+    })
     .catch(err => next(err))
 }
 
@@ -153,6 +160,44 @@ exports.updateStorePage = (req, res, next) => {
     });
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                    VIEWS                                   */
+/* -------------------------------------------------------------------------- */
+
+exports.addView = (req, res, next) => {
+    console.log('adding view foooor', req.body);
+    const date = new Date();
+    StoreView.findOne({
+        store: req.body.store, 
+        client: req.body.client,
+        created_at: {
+            $gte: new Date(date.getFullYear(), date.getMonth() - 1, 31),
+            $lte: new Date(date.getFullYear(), date.getMonth(), 31) 
+        }
+    })
+    .then(resp => {
+        if(resp) return res.json({ok: true})
+        else {
+            StoreView.create({store: req.body.store, client: req.body.client})
+            .then(resp => resp.toJSON())
+            .then(resp => console.log('added new view!', resp));
+        }
+    })
+        
+}
+
+exports.getViews = (req, res, next) => {
+    const date = new Date();
+    console.log(date.getFullYear(), date.getMonth() + 1, 31)
+    StoreView.countDocuments({store: req.body.store,
+        created_at: {
+            $gte: new Date(date.getFullYear(), date.getMonth() - 1, 31),
+            $lte: new Date(date.getFullYear(), date.getMonth(), 31) 
+        }})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
 exports.getOrders = (req, res, next) => {
     const store = req.body.store;
     StoreOrder.find({store: store._id})
@@ -162,6 +207,61 @@ exports.getOrders = (req, res, next) => {
         res.json(resp)
     })
     .catch(err => next(err));
+}
+
+exports.getOwnProducts = (req, res, next) => {
+    const store = req.body.store;
+    Product.find({store: store._id})
+    .then(products => res.json(products))
+    .catch(err => next(err));
+}
+
+exports.getPopularProducts = (req, res, next) => {
+    const date = new Date();
+    StoreOrder.find({
+        store: req.body.store,
+        created_at: {
+            $gte: new Date(date.getFullYear(), date.getMonth() - 1, 0),
+            $lte: new Date(date.getFullYear(), date.getMonth(), 31) 
+        }
+    }).select('orders')
+    .then(orders => {
+        const arr = {};
+        orders.map(order => {
+            order.orders.forEach(order => {arr[order.product] = arr[order.product] ? arr[order.product] + order.quantity : order.quantity});
+        })
+        let keys = Object.keys(arr);
+        keys = keys.slice(0, 4);
+        Product.find({_id: {$in: keys}})
+        .select('title images')
+        .then(products => {
+            console.log('the products are diesen', products)
+            res.json(products.map(product => ({...product._doc, quantity: arr[product._id]})));
+        })
+    });
+}
+
+exports.getReviews = (req, res, next) => {
+    StoreReview.find({store: req.params.store})
+    .populate({
+        path: 'client',
+        select: 'firstName lastName'
+    })
+    .then(reviews => res.json(reviews))
+    .catch(err => next(err));
+}
+
+exports.getReviewsOverview = (req, res, next) => {
+    StoreReview.find({store: req.params.store})
+    .then(reviews => {
+        const average = reviews.reduce((total, next) => total + next.stars, 0) / reviews.length;
+        res.json({
+            average: average || 0,
+            number: reviews.length
+        });
+    })
+    .catch(err => next(err));
+
 }
 
 exports.updateOrderStatus = (req, res, next) => {
@@ -228,8 +328,8 @@ exports.getCredit = (req, res, next) => {
 
 exports.getMonthlySales = (req, res, next) => {
     const date = new Date();
-    console.log('ayy im getting it', date)
     StorePayment.find({
+        store: req.body.store,
         created_at: {
             $gte: new Date(date.getFullYear(), date.getMonth(), 0),
             $lte: new Date(date.getFullYear(), date.getMonth(), 31) 
@@ -243,7 +343,6 @@ exports.getMonthlySales = (req, res, next) => {
 
 exports.getPreviousSales = (req, res, next) => {
     const date = new Date();
-    console.log('ayy im getting it', date)
     const payments = [
         StorePayment.find({
             store: req.body.store,
@@ -275,7 +374,6 @@ exports.getPreviousSales = (req, res, next) => {
 
 exports.getPendingFunds = (req, res, next) => {
     const date = new Date();
-    console.log('ayy im getting it', date)
     StorePayment.find({
         store: req.body.store,
         created_at: {

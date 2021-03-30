@@ -14,7 +14,7 @@ router.get('/orders', authenticateSeller, store.getOrders);
 router.put('/order/status', authenticateSeller, store.updateOrderStatus);
 router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder);
 
-router.get('/own-products', authenticateSeller, store.getOwnProducts);
+router.get('/own-products/:search*?', authenticateSeller, store.getOwnProducts);
 router.get('/popular-products', authenticateSeller, store.getPopularProducts)
 
 router.get('/page/:id', store.getStorePage);
@@ -29,6 +29,7 @@ router.get('/reviews/:store', store.getReviews);
 router.get('/reviews/overview/:store', store.getReviewsOverview);
 
 router.get('/credit', authenticateSeller, store.getCredit);
+router.get('/performance', authenticateSeller, store.getPerformance);
 router.get('/month-sales', authenticateSeller, store.getMonthlySales);
 router.get('/previous-sales', authenticateSeller, store.getPreviousSales);
 router.get('/pending-funds', authenticateSeller, store.getPendingFunds);

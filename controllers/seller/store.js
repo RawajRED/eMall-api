@@ -8,12 +8,7 @@ const Order = require('../../models/orders/Order');
 const Product = require('../../models/seller/product/Product');
 const WithdrawRequest = require('../../models/seller/WithdrawRequest');
 // const StorePayments = require('../../models/');
-const cron = require('node-cron');
 const { Timestamp } = require('bson');
-
-// cron.schedule('0 0 0 * * *', () => {
-
-// })
 
 exports.getStore = (req, res, next) => {
     Store.findOne({_id: req.params.id})
@@ -74,7 +69,6 @@ exports.updateStore = (req, res, next) => {
 // }
 
 exports.getStoreProductsByCategory = (req, res, next) => {
-    console.log('category', req.body.category);
     Store.find({categories: req.body.category, products: { $not: {$size: 0}}})
     .select('title description categories products logo reviews')
     .populate({
@@ -95,10 +89,10 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 exports.getStoreProductsBySubcategory = (req, res, next) => {
     const subcategory = req.body.subcategory;
     const category = subcategory.category;
-    const match = {subcategory: req.body.subcategory, stock: {$gt: 0}};
-    if(req.body.filter)
+    const match = {subcategory: req.body.subcategory._id, stock: {$gt: 0}};
+    if(req.body.filter !== '')
         match.filter = req.body.filter;
-    console.log('match is', match)
+    console.log(match)
     Store.find({categories: category, products: { $not: {$size: 0}}})
     .select('title description categories products logo')
     .populate({
@@ -211,7 +205,16 @@ exports.getOrders = (req, res, next) => {
 
 exports.getOwnProducts = (req, res, next) => {
     const store = req.body.store;
-    Product.find({store: store._id})
+    const criteria = req.params.search || '';
+    console.log('store', store, 'criteria', criteria)
+    Product.find({store: store._id, $or: [
+        {
+            "title.en": {$regex: criteria, $options: "i"}
+        },
+        {
+            "title.ar": {$regex: criteria, $options: "i"}
+        }
+    ]})
     .then(products => res.json(products))
     .catch(err => next(err));
 }
@@ -233,9 +236,9 @@ exports.getPopularProducts = (req, res, next) => {
         let keys = Object.keys(arr);
         keys = keys.slice(0, 4);
         Product.find({_id: {$in: keys}})
+        .populate('dealOfTheDay')
         .select('title images')
         .then(products => {
-            console.log('the products are diesen', products)
             res.json(products.map(product => ({...product._doc, quantity: arr[product._id]})));
         })
     });
@@ -322,6 +325,14 @@ exports.getCredit = (req, res, next) => {
     const store = req.body.store;
     Store.findOne({_id: store._id})
     .select('credit')
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.getPerformance = (req, res, next) => {
+    const store = req.body.store;
+    Store.findOne({_id: store._id})
+    .select('performance')
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }

@@ -7,6 +7,9 @@ const { validateAddProduct } = require('../../../validators/product/productValid
 
 router.post('/similar-products', product.getSimilarProducts);
 router.post('/more-from-seller', product.getMoreFromSeller);
+router.get('/deals', product.getDeals);
+router.get('/reviews/:product', product.getReviews);
+
 router.get('/store/:id', product.getStoreProducts);
 router.get('/product-variant/:id', productVariant.getVariant);
 router.post('/variant', productVariant.createProductVariant);
@@ -14,10 +17,14 @@ router.get('/variant/:id', productVariant.getProductVariant);
 
 router.get('/sms', productVariant.sms);
 
-router.get('/category/:id', product.findByCategory);
+router.post('/category/', product.findByCategory);
+router.post('/subcategory/', product.findBySubcategory);
 router.post('/find', product.findProduct);
 router.post('/', authenticateSeller, validateAddProduct, product.createProduct);
-router.put('/', validateAddProduct, product.updateProduct);
+router.put('/options', authenticateSeller, product.updateProductOptions);
+router.put('/options/add-param', authenticateSeller, product.addProductOptionsAddParam);
+router.put('/options/update-param', authenticateSeller, product.updateProductOptionsAddParam);
+router.put('/', authenticateSeller, validateAddProduct, product.updateProduct);
 router.delete('/', product.deleteProduct);
 
 router.get('/:id', product.getProductById);

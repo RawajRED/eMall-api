@@ -6,6 +6,36 @@ const Store = require('../models/seller/Store');
 const Product = require('../models/seller/product/Product');
 const FeaturedProduct = require('../models/other/FeaturedProduct');
 
+const cron = require('node-cron');
+
+cron.schedule('0 59 23 * * *', () => {
+    const date = new Date();
+    // BannerAd.remove({});
+    BannerAd
+        .find({
+            lastRenew: {
+                $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 8),
+                $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 7) 
+            } 
+        })
+        .populate({path: 'store', select: 'credit'})
+    .then(ads => {
+        const promises = [];
+            ads.forEach(ad => {
+                if(ad.renew && ad.store.credit >= 20){
+                    promises.push(BannerAd.findOneAndUpdate({_id: ad._id}, {lastRenew: new Date()}).exec());
+                    promises.push(Store.updateOne({_id: ad.store._id}, {$inc: {credit: -20}}).exec());
+                } else {
+                    promises.push(BannerAd.deleteOne(ad).exec());
+                }
+            }, [])
+        Promise.all(promises).then(res => console.log('Updated Banner')).catch(err => console.log(err));
+    })
+    
+    //! Delete active Deals of the Day and activate the new ones
+    DealsOfTheDay.deleteMany({active: true}).then(resp => DealsOfTheDay.updateMany({active: false}, {active: true}))
+})
+
 /* -------------------------------------------------------------------------- */
 /*                                  Main Ads                                  */
 /* -------------------------------------------------------------------------- */
@@ -129,30 +159,23 @@ exports.getOwnBanners = (req, res, next) => {
 
 exports.createBannerAd = (req, res, next) => {
     const store = req.body.store;
-    Store.findOne({_id: store._id})
+    Store.findOneAndUpdate({_id: store._id, credit: {$gte: 20}}, {$inc: {credit: -20}}, {new: true})
     .then(resp => {
-        if(resp.credit >= 20){
-            Store.findOneAndUpdate({_id: store._id}, {$inc: {credit: -20}}, {new: true})
-            .then(resp => {
                 if(!resp)
-                    next({status: 404, message: `Couldn't find store`});
+                    next({status: 400, message: "You do not have enough store credits"})
                 else {
                     BannerAd.create({
                         adType: req.body.adType,
                         image: req.body.image,
                         store: store._id,
-                        product: req.body.product
+                        product: req.body.product,
+                        lastRenew: new Date()
                     })
                     .then(resp => resp.toJSON())
                     .then(() => res.json({success: true}))
                 }
-            })
-            .catch(err => next(err));
         }
-        else {
-            next({status: 400, message: "You do not have enough store credits"})
-        }
-    })
+    )
 }
 
 /**
@@ -181,9 +204,19 @@ exports.updateBannerAd = (req, res, next) => {
 /* -------------------------------------------------------------------------- */
 
 exports.getDealsOfTheDay = (req, res, next) => {
-    DealsOfTheDay.find()
+    DealsOfTheDay.find({active: true})
     .sort({discount: -1})
-    .populate('product')
+    .populate({path: 'product', select: 'title images price'})
+    .populate({path: 'store', select: 'title'})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.getFullDealsOfTheDay = (req, res, next) => {
+    DealsOfTheDay.find({active: true})
+    .sort({discount: -1})
+    .populate({path: 'product', populate: 'dealOfTheDay store'})
+    .populate({path: 'store', select: 'title'})
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }

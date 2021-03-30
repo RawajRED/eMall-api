@@ -162,21 +162,25 @@ exports.clientLoginToken = (req, res, next) => {
 
 exports.clientVerifyOtp = (req, res, next) => {
     console.log(req.body);
-    Client.findOne({email: req.body.email})
-    .then(resp => resp.toJSON())
-    .then(client => {
-        if(req.body.otp.toUpperCase() === client.otp.toUpperCase()){
-            Client.updateOne({email: client.email}, {verified: true}, {$unset: {otp: 1}})
-            .then(client => {
-                delete client.password;
-                const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-                return res.json({client, token});
-            })
-        }
-        else {
-            return next({status: 400, message: 'Incorrect PIN'})
+    Client.findOneAndUpdate({email: req.body.email, otp: req.body.otp.toUpperCase()}, {verified: true}, {$unset: {otp: 1}, new: true})
+    .populate({
+        path: 'wishlist',
+        populate: {
+            path: 'products',
+            populate: 'store'
         }
     })
+    .populate('cart')
+    .then(client => {
+        if(!client){
+            return next({status: 400, message: 'Incorrect PIN'})
+        } else {
+            delete client.password;
+            const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
+            return res.json({client, token, type: 'client'});
+        }
+    })
+    .catch(err => next({status: 400, message: 'Incorrect PIN'}))
 }
 
 exports.clientForgotPassword = (req, res, next) => {
@@ -307,7 +311,7 @@ exports.getClientCart = (req, res, next) => {
     Cart.findOne({client})
     .populate({
         path: 'products.product',
-        populate: 'dealOfTheDay'
+        populate: 'dealOfTheDay store'
     })
     .then(resp => res.json(resp))
     .catch(err => next({status: 404, message: "Couldn't find cart"}))

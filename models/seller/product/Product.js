@@ -86,15 +86,7 @@ const productSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'DealOfTheDay'
     }
-});
-
-productSchema.post('save', doc => {
-    Store.updateOne({_id: doc.store}, {$push: {products: doc._id}})
-    .then(resp => {
-        console.log('success!', resp);
-    })
-    .catch(err => console.log('ERR!!!!', err));
-})
+}, {timestamps: {createdAt: 'created_at', updatedAt: 'updated_at'}});
 
 productSchema.pre('remove', function() {
     Store.updateOne({_id: this.store}, {$pull: {products: this._id}})

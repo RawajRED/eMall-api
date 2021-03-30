@@ -68,7 +68,11 @@ const storeSchema = new Schema({
     },
     facebookPage: String,
     website: String,
-    bankInfo: String
+    bankInfo: String,
+    performance: {
+        type: Number,
+        default: 0
+    }
 }, {timestamps: { createdAt: 'created_at'}});
 
 storeSchema.post('save', function(doc){

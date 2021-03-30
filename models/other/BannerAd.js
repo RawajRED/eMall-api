@@ -21,7 +21,10 @@ const bannerAdSchema = new Schema({
     clicks: [{
         type: Schema.Types.ObjectId,
         ref: 'Client'
-    }]
+    }],
+    lastRenew: {
+        type: Date
+    }
 }, {timestamps: { createdAt: 'created_at'}});
 
     const bannerAdModel = mongoose.model('BannerAd', bannerAdSchema);

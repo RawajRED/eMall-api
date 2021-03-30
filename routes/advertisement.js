@@ -18,6 +18,7 @@ router.put('/banner', authenticateSeller, advertisement.updateBannerAd);
 
 //  * Deal of the Day
 router.get('/dealsoftheday', advertisement.getDealsOfTheDay);
+router.get('/dealsoftheday/full', advertisement.getFullDealsOfTheDay);
 router.get('/dealsoftheday/own', authenticateSeller, advertisement.getOwnDealsOfTheDay);
 router.post('/dealsoftheday', authenticateSeller, advertisement.createDealOfTheDay);
 

@@ -8,7 +8,7 @@ const FeaturedProduct = require('../models/other/FeaturedProduct');
 
 const cron = require('node-cron');
 
-cron.schedule('0 59 23 * * *', () => {
+cron.schedule('59 23 * * *', () => {
     const date = new Date();
     // BannerAd.remove({});
     BannerAd
@@ -34,6 +34,13 @@ cron.schedule('0 59 23 * * *', () => {
     
     //! Delete active Deals of the Day and activate the new ones
     DealsOfTheDay.deleteMany({active: true}).then(resp => DealsOfTheDay.updateMany({active: false}, {active: true}))
+});
+
+cron.schedule('59 23 * * Saturday', () => {
+    HomeAd.deleteMany({active: true})
+    .then(res => {
+        HomeAd.updateMany({active: false}, {active: true});
+    })
 })
 
 /* -------------------------------------------------------------------------- */
@@ -60,7 +67,7 @@ exports.createMainAd = (req, res, next) => {
 exports.getMainAds = (req, res, next) => {
     BannerAd
         .find()
-        .then(resp => res.json(shuffle([...resp, ...resp])))
+        .then(resp => res.json(shuffle(resp)))
         .catch(err => next(err));
 }
 
@@ -117,7 +124,7 @@ exports.updateHighestBidder = (req, res, next) => {
             })
             .catch(err => next(err));
         }
-        else if(newAd.bid > currAd.bid + 10){
+        else if(newAd.bid >= currAd.bid + 10){
             Store.findOneAndUpdate({_id: currAd.store}, {$inc: {credit: currAd.bid}}, {new: true})
             .then(resp => console.log(`Updated old credit (${resp.title})`, resp.credit));
             Store.findOneAndUpdate({_id: newAd.store}, {$inc: {credit: newAd.bid * -1}})

@@ -40,8 +40,66 @@ exports.createProductVariant = (req, res, next) => {
         .then(prod => {
             res.json({variant: resp, product: prod})
         })
+        .catch(err => next(err));
     })
     .catch(err => next(err));
+}
+
+exports.updateProductVariant = async (req, res, next) => {
+    const variantId = req.body.variantId;
+    const newVariant = {en: req.body.variant.en, ar: req.body.variant.ar};
+    const newProduct = req.body.product;
+    const variants = await ProductVariant.findOne({_id: req.body._id});
+    console.log(variantId, newVariant, newProduct);
+    console.log(variants);
+    variants.products = variants.products.map(product => {
+        console.log('product rn is ', product)
+        if(product._id.toString() === variantId){
+            product.product = newProduct;
+            product.variant = newVariant;
+        }
+        return product;
+    });
+    console.log(variants);
+    variants.save();
+    ProductVariant.updateOne({_id: variants._id}, variants)
+    .then(resp => res.json({resp}))
+    .catch(err => next(err));
+}
+
+exports.addProductToVariant = (req, res, next) => {
+    const newVariant = {en: req.body.variant.en, ar: req.body.variant.ar};
+    const newProduct = req.body.product;
+    ProductVariant.findOneAndUpdate({_id: req.body._id}, {$push: {products: {
+        product: newProduct,
+        variant: newVariant 
+    }}}, {new: true})
+    .then(resp => {
+        Product.findOneAndUpdate({_id: newProduct}, {variants: resp._id}, {new: true})
+        .then(resp => res.json({success: true}))
+    })
+    .catch(err => next(err));
+}
+
+exports.removeProductVariant = async (req, res, next) => {
+    const variantId = req.body.variantId;
+    const variants = await ProductVariant.findOne({_id: req.body._id});
+    variants.products = variants.products.filter(product => {
+        if(product._id.toString() !== variantId)
+            return product;
+        else Product.findOneAndUpdate({_id: product.product}, {$unset: {variants: 1}});
+    });
+    console.log(variants, variants.products.length);
+    if(variants.products.length > 0){
+        variants.save();
+        ProductVariant.updateOne({_id: variants._id}, variants)
+        .then(resp => res.json({resp}))
+        .catch(err => next(err));
+    } else {
+        ProductVariant.findOneAndDelete({_id: variants._id})
+        .then(resp => res.json(resp))
+        .catch(err => next(err));
+    }
 }
 
 exports.sms = (req, res, next) => {
@@ -54,4 +112,12 @@ exports.sms = (req, res, next) => {
    })
   .then(message => console.log(message  ))
   .catch(err => next(err));
+}
+
+exports.getProductVariants = (req, res, next) => {
+    ProductVariant.findOne({'products.product': req.params.product})
+    .populate({path: 'products.product', select: 'title images'})
+    .then(variants => {
+        res.json(variants);
+    })
 }

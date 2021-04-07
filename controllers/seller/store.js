@@ -71,11 +71,13 @@ exports.updateStore = (req, res, next) => {
 exports.getStoreProductsByCategory = (req, res, next) => {
     Store.find({categories: req.body.category, products: { $not: {$size: 0}}})
     .select('title description categories products logo reviews')
+    .sort('title')
     .populate({
         path: 'products',
         match: {category: req.body.category, stock: {$gt: 0}},
         select: 'title description discount price currency images options category',
-        populate: 'dealOfTheDay'
+        populate: 'dealOfTheDay',
+        sort: 'title.en'
     })
     .populate('categories')
     .populate({

@@ -12,8 +12,11 @@ router.get('/reviews/:product', product.getReviews);
 
 router.get('/store/:id', product.getStoreProducts);
 router.get('/product-variant/:id', productVariant.getVariant);
-router.post('/variant', productVariant.createProductVariant);
-router.get('/variant/:id', productVariant.getProductVariant);
+router.post('/variant', authenticateSeller, productVariant.createProductVariant);
+router.put('/variant', authenticateSeller, productVariant.updateProductVariant);
+router.put('/variant/add', authenticateSeller, productVariant.addProductToVariant);
+router.delete('/variant', authenticateSeller, productVariant.removeProductVariant);
+router.get('/variant/:product', productVariant.getProductVariants);
 
 router.get('/sms', productVariant.sms);
 

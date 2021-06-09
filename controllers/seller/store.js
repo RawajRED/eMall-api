@@ -7,8 +7,23 @@ const StoreOrder = require('../../models/orders/StoreOrder');
 const Order = require('../../models/orders/Order');
 const Product = require('../../models/seller/product/Product');
 const WithdrawRequest = require('../../models/seller/WithdrawRequest');
-// const StorePayments = require('../../models/');
-const { Timestamp } = require('bson');
+
+const cron = require('node-cron');
+
+cron.schedule('59 23 * * *', () => {
+    StorePayment
+        .find({
+            created_at: {
+                $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 14),
+                $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 13) 
+            } 
+        })
+        .then(payments => {
+            const promises = [];
+            payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
+            Promise.all(promises).then(() => console.log('Updated Store Payments')).catch(err => console.log(err));
+        })
+});
 
 exports.getStore = (req, res, next) => {
     Store.findOne({_id: req.params.id})
@@ -24,6 +39,7 @@ exports.getStore = (req, res, next) => {
     .then(resp => {
         StorePage.findOne({store: req.params.id})
         .then(page => {
+            console.log('the resp is', resp)
             res.json({...resp._doc, page})
         })
     })
@@ -41,6 +57,12 @@ exports.getStorePage = (req, res, next) => {
 exports.uploadPageImage = (req, res, next) => {
     console.log('file', req.file, req.body);
     res.json({ayy: 'lmao'})
+}
+
+exports.createStore = (req, res, next) => {
+    Store.create(req.body)
+    .then(stores => stores.toJSON())
+    .then(stores => res.json(stores))
 }
 
 exports.updateStore = (req, res, next) => {
@@ -69,6 +91,36 @@ exports.updateStore = (req, res, next) => {
 // }
 
 exports.getStoreProductsByCategory = (req, res, next) => {
+    Store.find({categories: req.body.category})
+    .select('title description categories logo reviews')
+    .sort('title')
+    .limit(10)
+    .populate('categories')
+    .populate({
+        path: 'reviews',
+        select: 'stars'
+    })
+    .then(async stores => {
+        const _stores = stores.map(async store => {
+            store.products = await Product.find({store, category: req.body.category})
+            .select('title description discount price currency images options category extraText extraImage')
+            .populate('dealOfTheDay')
+            .sort('title.en')
+            .limit(5)
+            .exec();
+            return store;
+        })
+        // console.log('_stores are', _stores)
+        Promise.all(_stores).then(resp => {
+            res.json(resp)
+        });
+        // await res.json(_stores)
+    })
+    .catch(err => next({status: 404, message: err}));
+}
+
+exports.getStoreProductsByCategoryFull = (req, res, next) => {
+    console.log('skipping by ', req.body.skip)
     Store.find({categories: req.body.category, products: { $not: {$size: 0}}})
     .select('title description categories products logo reviews')
     .sort('title')
@@ -79,6 +131,7 @@ exports.getStoreProductsByCategory = (req, res, next) => {
         populate: 'dealOfTheDay',
         sort: 'title.en'
     })
+    .skip(req.body.skip)
     .populate('categories')
     .populate({
         path: 'reviews',
@@ -89,6 +142,40 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 }
 
 exports.getStoreProductsBySubcategory = (req, res, next) => {
+    const subcategory = req.body.subcategory;
+    const category = subcategory.category;
+    Store.find({categories: category, products: { $not: {$size: 0}}})
+    .select('title description categories logo reviews')
+    .sort('title')
+    .limit(10)
+    .populate('categories')
+    .populate({
+        path: 'reviews',
+        select: 'stars'
+    })
+    .then(async stores => {
+        console.log('looking for filter', req.body.filter);
+        const _stores = stores.map(async store => {
+            const match = {store, subcategory}
+            if(req.body.filter) match.filter =  req.body.filter;
+            store.products = await Product.find(match)
+            .select('title description discount price currency images options category extraText extraImage')
+            .populate('dealOfTheDay')
+            .sort('title.en')
+            .limit(5)
+            .exec();
+            return store;
+        })
+        // console.log('_stores are', _stores)
+        Promise.all(_stores).then(resp => {
+            res.json(resp)
+        });
+        // await res.json(_stores)
+    })
+    .catch(err => next({status: 404, message: err}));
+}
+
+exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     const subcategory = req.body.subcategory;
     const category = subcategory.category;
     const match = {subcategory: req.body.subcategory._id, stock: {$gt: 0}};
@@ -103,12 +190,30 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
         select: 'title description discount price currency images options',
         populate: 'dealOfTheDay'
     })
+    .skip(req.body.skip)
     .populate('categories')
     .populate({
         path: 'reviews',
         select: 'stars'
     })
-    .then(store => res.json(store))
+    .then(async stores => {
+        const _stores = stores.map(async store => {
+            const match = {store, subcategory}
+            if(req.body.filter) match.filter =  req.body.filter;
+            store.products = await Product.find(match)
+            .select('title description discount price currency images options category extraText extraImage')
+            .populate('dealOfTheDay')
+            .sort('title.en')
+            .limit(5)
+            .exec();
+            return store;
+        })
+        // console.log('_stores are', _stores)
+        Promise.all(_stores).then(resp => {
+            res.json(resp)
+        });
+        // await res.json(_stores)
+    })
     .catch(err => next({status: 404, message: 'No Stores Found'}));
 }
 

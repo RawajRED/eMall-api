@@ -38,6 +38,12 @@ exports.deleteSubcategory = (req, res, next) => {
     .catch(err => next(err));
 }
 
+exports.getAllFilters = (req, res, next) => {
+    Filter.find()
+    .then(filters => res.json(filters))
+    .catch(err => next(err))
+}
+
 exports.getFilters = (req, res, next) => {
     Filter.find({subcategory: req.params.subcategory})
     .then(filters => res.json(filters))

@@ -154,6 +154,7 @@ exports.clientLoginToken = (req, res, next) => {
     })
     .populate('cart')
     .then(client => {
+        console.log(client)
         const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
         return res.json({client, token, type: 'client'})
     })

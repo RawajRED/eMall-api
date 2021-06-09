@@ -20,9 +20,12 @@ router.get('/variant/:product', productVariant.getProductVariants);
 
 router.get('/sms', productVariant.sms);
 
+router.post('/category/full', product.findByCategoryFull);
 router.post('/category/', product.findByCategory);
+router.post('/subcategory/full', product.findBySubcategory);
 router.post('/subcategory/', product.findBySubcategory);
 router.post('/find', product.findProduct);
+router.post('/bulk', product.createProductsBulk);
 router.post('/', authenticateSeller, validateAddProduct, product.createProduct);
 router.put('/options', authenticateSeller, product.updateProductOptions);
 router.put('/options/add-param', authenticateSeller, product.addProductOptionsAddParam);

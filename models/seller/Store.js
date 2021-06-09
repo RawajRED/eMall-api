@@ -1,6 +1,8 @@
 const StorePage = require('./StorePage');
 const Product = require('./product/Product');
 const Seller = require('./Seller');
+const StoreReview = require('./StoreReview');
+const StoreView = require('./StoreView');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -11,7 +13,6 @@ const storeSchema = new Schema({
     },
     description: {
         type: String,
-        required: true
     },
     page: {
         type: Schema.Types.ObjectId,
@@ -90,6 +91,7 @@ storeSchema.post('remove', function(doc){
     StorePage.deleteOne({store: doc._id});
     Product.deleteMany({store: doc._id});
     Seller.deleteMany({store: doc._id});
+    
 });
 
 

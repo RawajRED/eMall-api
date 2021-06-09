@@ -7,7 +7,9 @@ const { upload } = require('../../s3');
 
 router.get('/most-popular', store.getMostPopularStores);
 router.post('/find-by-category', store.getStoreProductsByCategory);
+router.post('/find-by-category/full', store.getStoreProductsByCategoryFull);
 router.post('/find-by-subcategory', store.getStoreProductsBySubcategory);
+router.post('/find-by-subcategory/full', store.getStoreProductsBySubcategoryFull);
 router.post('/find-similar-stores', store.getSimilarStores);
 
 router.get('/orders', authenticateSeller, store.getOrders);
@@ -37,6 +39,7 @@ router.get('/payments', authenticateSeller, store.getPayments);
 router.post('/request-withdrawal', authenticateSeller, store.requestWithdrawal);
 
 router.get('/:id', store.getStore);
+router.post('/', store.createStore);
 router.put('/', store.updateStore);
 
 module.exports = router;

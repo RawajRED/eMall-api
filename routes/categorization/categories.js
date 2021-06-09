@@ -5,6 +5,7 @@ const { validateCategoryCreate } = require('../../validators/categorization/cate
 
 router.get('/', categories.getCategories);
 router.get('/:id', categories.getCategory);
+router.post('/multiple', categories.createCategory);
 router.post('/', validateCategoryCreate, categories.createCategory);
 router.put('/', categories.editCategory);
 router.delete('/', categories.deleteCategory);

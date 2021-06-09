@@ -5,9 +5,8 @@ const ProductReview = require('../../../models/seller/product/ProductReview');
 
 exports.createProduct = (req, res, next) => {
     const product = req.body.product;
-    product.store = req.body.store._id;
+    product.store = req.body.store;
     const variant = req.body.variant;
-    console.log(req.body);
     Product.create(product)
     .then(resp => resp.toJSON())
     .then(prod => {
@@ -26,6 +25,11 @@ exports.createProduct = (req, res, next) => {
     .catch(err => next(err));
     })
     .catch(err => next(err));
+}
+
+exports.createProductsBulk = (req, res, next) => {
+    Product.create(req.body)
+    .then(resp => res.json(resp))
 }
 
 
@@ -53,12 +57,32 @@ exports.getProductById = (req, res, next) => {
 }
 
 exports.findByCategory = (req, res ,next) => {
-    console.log('umm yo?')
     const category = req.body.id;
     const match = {category};
-    if(req.body.filter !== '')
+    if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
+    .limit(40)
+    .populate('dealOfTheDay')
+    .then(products => res.json(products))
+    .catch(err => next(err)); 
+}
+
+exports.findByCategoryFull = (req, res ,next) => {
+    const category = req.body.id;
+    console.log('skipping by ', req.body.skip)
+    const match = {category, $or: [
+        {
+            "title.en": {$regex: req.body.search, $options: "i"}
+        },
+        {
+            "title.ar": {$regex: req.body.search, $options: "i"}
+        }
+    ]};
+    if(req.body.filter)
+        match.filter = req.body.filter;
+    Product.find(match)
+    .skip(req.body.skip)
     .populate('dealOfTheDay')
     .then(products => res.json(products))
     .catch(err => next(err)); 
@@ -66,9 +90,30 @@ exports.findByCategory = (req, res ,next) => {
 
 exports.findBySubcategory = (req, res, next) => {
     const subcategory = req.body.id;
-    const filter = req.body.filter !== '' ? req.body.filter : undefined;
-    console.log('subcategory: ', subcategory)
-    Product.find({subcategory, filter})
+    const match = {subcategory};
+    if(req.body.filter)
+        match.filter = req.body.filter;
+    Product.find(match)
+    .populate('dealOfTheDay')
+    .limit(40)
+    .then(products => res.json(products))
+    .catch(err => next(err)); 
+}
+
+exports.findBySubcategoryFull = (req, res, next) => {
+    const subcategory = req.body.id;
+    const match = {subcategory, $or: [
+        {
+            "title.en": {$regex: req.body.search, $options: "i"}
+        },
+        {
+            "title.ar": {$regex: req.body.search, $options: "i"}
+        }
+    ]};
+    if(req.body.filter)
+        match.filter = req.body.filter;
+    Product.find(match)
+    .skip(req.body.skip)
     .populate('dealOfTheDay')
     .then(products => res.json(products))
     .catch(err => next(err)); 

@@ -7,6 +7,12 @@ const generateOtp = () => {
     return 'ABCDE';
 }
 
+exports.createSeller = (req, res, next) => {
+    Seller.create(req.body)
+    .then(sellers => sellers.toJSON())
+    .then(sellers => res.json(sellers));
+}
+
 exports.createStoreAndSellerEmail = (req, res, next) => {
     const store = {
         title: req.body.store.title,

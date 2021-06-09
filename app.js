@@ -1,4 +1,3 @@
-
 const createError = require('http-errors');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -21,6 +20,11 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 // Routers
 
+// Cause an intentional delay
+// app.use( ( req, res, next ) => {
+//   setTimeout(next, 2000);
+// });
+
 const clientRouter = require('./routes/client/client');
 const sellerRouter = require('./routes/seller/seller');
 const storeRouter = require('./routes/seller/store');
@@ -35,7 +39,7 @@ const adsRouter = require('./routes/advertisement');
 
 const mongoose = require('mongoose');
 mongoose.connect(
-  process.env.DATABASE_URL,
+  process.env.DATABASE_URL_,
   {
     useNewUrlParser: true,
     useFindAndModify: false,

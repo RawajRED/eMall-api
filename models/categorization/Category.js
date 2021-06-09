@@ -14,19 +14,12 @@ const categorySchema = new Schema({
     },
     description: {
         en: {
-            type: String,
-            required: true
+            type: String
         },
         ar: {
-            type: String,
-            required: true
+            type: String
         }
     },
-    icon: {
-        type: String,
-        required: true
-    },
-    iconType: String,
     banner: String,
     image: {
         type: String,

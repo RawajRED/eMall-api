@@ -14,7 +14,6 @@ const filterSchema = new Schema({
     },
     icon: {
         type: String,
-        required: true
     },
     iconType: String,
     image: String,

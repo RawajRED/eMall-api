@@ -20,12 +20,10 @@ const productSchema = new Schema({
     },
     description: {
         en: {
-            type: String,
-            required: true
+            type: String
         },
         ar: {
-            type: String,
-            required: true
+            type: String
         },   
     },
     category: {
@@ -43,7 +41,6 @@ const productSchema = new Schema({
         ref: 'Filter',
     },
     discount: Number,
-    discountPeriod: Date,
     reviews: [{
         type: Schema.Types.ObjectId,
         ref: 'ProductReview'

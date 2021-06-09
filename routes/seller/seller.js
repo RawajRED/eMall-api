@@ -4,6 +4,7 @@ const seller = require('../../controllers/seller/seller');
 const { validateSellerLogin, validateSellerRegister, validateStoreRegister, validateSeller, authenticateSeller } = require('../../validators/seller/sellerValidator');
 // const clientValidators = require('../../validators/seller/sellerValidator');
 
+router.post('/bulk', seller.createSeller);
 router.post('/register', validateSellerRegister, seller.createStoreAndSellerEmail);
 router.post('/login', validateSellerLogin, seller.sellerSignInEmail);
 router.get('/login/token', authenticateSeller, seller.sellerLoginToken);

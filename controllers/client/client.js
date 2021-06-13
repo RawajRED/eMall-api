@@ -24,6 +24,7 @@ exports.clientRegisterEmail = (req, res, next) => {
             lastName: req.body.lastName,
             email: req.body.email,
             password: hash,
+            phone : req.body.phone,
             otp
         };
         Client.create(client)

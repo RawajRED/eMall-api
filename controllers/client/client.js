@@ -30,18 +30,18 @@ exports.clientRegisterEmail = (req, res, next) => {
         Client.create(client)
         .then(resp => resp.toJSON())
         .then(resp => {
-            // sendMail({
-            //     mail: client.email,
-            //     subject: 'Please Verify Your Email',
-            //     text: `Verify your email with the code ${otp}`,
-            //     html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
-            // })
-            // .then(() => {
+            sendMail({
+                mail: client.email,
+                subject: 'Please Verify Your Email',
+                text: `Verify your email with the code ${otp}`,
+                html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
+            })
+            .then(() => {
                 delete resp['password'];
                 delete resp['otp'];
                 Client.populate(resp, 'wishlist cart')
                 .then(resp => res.json(resp));
-            // });
+            });
         })
         .catch(err =>next({status: 400, message: err}));
     })
@@ -121,20 +121,20 @@ exports.clientLoginEmail = (req, res, next) => {
                     }
                     else {
                         const otp = 'ABCDE';
-                        // sendMail({
-                        //     mail: client.email,
-                        //     subject: 'Please Verify Your Email',
-                        //     text: `Verify your email with the code ${otp}`,
-                        //     html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
-                        // })
-                        // .then(() => {
+                        sendMail({
+                            mail: client.email,
+                            subject: 'Please Verify Your Email',
+                            text: `Verify your email with the code ${otp}`,
+                            html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
+                        })
+                        .then(() => {
                             Client.updateOne({_id: client._id}, {otp})
                             .then(() => {
                                 delete client.otp;
                                 return res.json({client})
                             })
                             .catch(err => console.log(err))
-                        // });
+                        });
                     }
                 }
                 else next({message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}, status: 401});
@@ -190,7 +190,16 @@ exports.clientForgotPassword = (req, res, next) => {
     Client.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
     .then(client => {
         console.log(client);
-        res.json({confirm: true})
+        sendMail({
+            mail: client.email,
+            subject: 'Forget Password',
+            text: `Change your password using this code : ${otp}`,
+            html: `<p> Change your password using this code <strong>${otp}</strong></p>`
+        })
+        .then(() => {
+            res.json({confirm: true})
+        });
+        
     })
     .catch(err => next(err));
 }
@@ -203,7 +212,7 @@ exports.clientChangePassword = (req, res, next) => {
         const saltRounds = 10;
         bcrypt.hash(password, saltRounds, (err, hash) => {
             if(err) throw new Error(err);
-            Client.findOneAndUpdate({_id: client._id}, {password: hash})
+            Client.findOneAndUpdate({_id: client._id}, {password: hash, resetOtp : null})
             .then(() => {
                 res.json({confirmed: true});
             })

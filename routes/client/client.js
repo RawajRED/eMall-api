@@ -35,13 +35,13 @@ router.put('/profile', clientValidators.clientIsLoggedIn, client.updateProfile);
 router.get('/payments', clientValidators.clientIsLoggedIn, client.getPayments);
 
 // ? CLIENT GENERAL
-router.post('/register', clientValidators.validateClientRegisterEmail, client.clientRegisterEmail);
-router.post('/login', clientValidators.validateClientLoginEmail, client.clientLoginEmail);
-router.get('/login/token', clientValidators.clientIsLoggedIn, client.clientLoginToken);
-router.post('/login/otp', client.clientVerifyOtp);
+router.post('/register', clientValidators.validateClientRegisterEmail, client.clientRegisterEmail); //tested
+router.post('/login', clientValidators.validateClientLoginEmail, client.clientLoginEmail); //tested
+router.get('/login/token', clientValidators.clientIsLoggedIn, client.clientLoginToken); 
+router.post('/login/otp', client.clientVerifyOtp); //tested
 router.post('/login/facebook', client.clientLoginFacebook);
 router.post('/forgot-password', client.clientForgotPassword);
-router.post('/change-password', client.clientChangePassword);
+router.post('/change-password', clientValidators.validateClientLoginEmail,client.clientChangePassword);
 router.post('/forgot-password/check-otp', client.clientCheckOtp);
 router.get('/subtotal', clientValidators.clientIsLoggedIn, client.clientSubtotal);
 router.get('/total', clientValidators.clientIsLoggedIn, client.clientTotal);

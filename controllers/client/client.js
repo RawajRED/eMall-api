@@ -18,7 +18,7 @@ exports.clientRegisterEmail = (req, res, next) => {
     bcrypt.hash(password, saltRounds, (err, hash) => {
         if(err)
             return next({status: 500, message: 'Internal Server Error'})
-        const otp = 'ABCDE';
+        const otp = createId(5);
         const client = {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -120,7 +120,7 @@ exports.clientLoginEmail = (req, res, next) => {
                         return res.json({client, token, type: 'client'})
                     }
                     else {
-                        const otp = 'ABCDE';
+                        const otp = client.otp;
                         sendMail({
                             mail: client.email,
                             subject: 'Please Verify Your Email',

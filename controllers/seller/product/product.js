@@ -162,7 +162,6 @@ exports.getSimilarProducts = (req, res, next) => {
 }
 
 exports.getStoreProducts = (req, res, next) => {
-    console.log('getting store param shit', req.params.id)
     Product.find({store: req.params.id})
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))

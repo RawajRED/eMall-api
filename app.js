@@ -39,7 +39,7 @@ const adsRouter = require('./routes/advertisement');
 
 const mongoose = require('mongoose');
 mongoose.connect(
-  process.env.DATABASE_URL_,
+  process.env.DATABASE_URL,
   {
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -80,8 +80,8 @@ app.use('/api/product', productRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/advertisement', adsRouter);
 
-app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
-app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));
+app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.location}));
+app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.location)));
 
 app.use(
   "/api",

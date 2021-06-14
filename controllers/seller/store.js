@@ -91,6 +91,7 @@ exports.updateStore = (req, res, next) => {
 // }
 
 exports.getStoreProductsByCategory = (req, res, next) => {
+    console.log('BODY', req.body)
     Store.find({categories: req.body.category})
     .select('title description categories logo reviews')
     .sort('title')

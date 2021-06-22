@@ -8,10 +8,20 @@ const generateOtp = () => {
 }
 
 exports.createSeller = (req, res, next) => {
-    Seller.create(req.body)
-    .then(sellers => sellers.toJSON())
-    .then(sellers => res.json(sellers));
+
+    const password = req.body.password;
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds)
+    .then(hash => {
+        req.body.password = hash ;
+        req.body.authorities = req.body.authorities.split(';');
+        Seller.create(req.body)
+        .then(sellers => sellers.toJSON())
+        .then(sellers => res.json(sellers));
+    })
 }
+
+
 
 exports.createStoreAndSellerEmail = (req, res, next) => {
     const store = {

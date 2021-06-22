@@ -13,15 +13,16 @@ const s3 = new aws.S3({
 
 exports.upload = multer({
     storage: s3Storage({
-      key(req, file, cb) {
+      Key: (req, file, cb)=> {
         cb(null, Date.now().toString() + path.extname(file.originalname));
-      },
+        //cb(null, file.originalname); for fixing big image sizes .
+       },
+
       s3,
       Bucket: 'emallbucket',
-      acl: 'public-read',
+      ACL: 'public-read',
       resize : {height: 700, width: 1200, options: {withoutEnlargement: true,fit: 'inside'}},
-      //toFormat : {type : 'jpeg', options :{ quality : 50, mozjpeg : true}},
-      metadata(req, file, cb) {
+      metadata: (req, file, cb)=> {
         cb(null, {fieldName: file.fieldname});
       },
 
@@ -30,7 +31,7 @@ exports.upload = multer({
 
 exports.uploadThumnail = multer({
   storage: s3Storage({
-    key(req, file, cb) {
+    Key(req, file, cb) {
       cb(null, Date.now().toString() + path.extname(file.originalname));
     },
     s3,

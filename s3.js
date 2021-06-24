@@ -17,15 +17,13 @@ exports.upload = multer({
         cb(null, Date.now().toString() + path.extname(file.originalname));
         //cb(null, file.originalname); for fixing big image sizes .
        },
-
       s3,
       Bucket: 'emallbucket',
       ACL: 'public-read',
-      resize : {height: 700, width: 1200, options: {withoutEnlargement: true,fit: 'inside'}},
+      resize : {height: 700, width: 1200, options: {withoutEnlargement: true, fit: 'inside'}},
       metadata: (req, file, cb)=> {
         cb(null, {fieldName: file.fieldname});
       },
-
     }) 
   })
 

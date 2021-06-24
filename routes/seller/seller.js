@@ -9,7 +9,7 @@ router.post('/register', validateSellerRegister, seller.createStoreAndSellerEmai
 router.post('/login', validateSellerLogin, seller.sellerSignInEmail);
 router.get('/login/token', authenticateSeller, seller.sellerLoginToken);
 router.post('/login/facebook', seller.sellerSignInFacebook);
-router.post('/verify', validateSeller, (req, res) => res.status(200).json({done: true}))
+router.post('/verify', validateSeller, (req, res) => res.json({done: true}))
 router.post('/forgot-password', seller.sellerForgotPassword);
 router.post('/change-password', seller.sellerChangePassword);
 router.post('/forgot-password/check-otp', seller.sellerCheckOtp);

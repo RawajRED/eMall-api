@@ -4,9 +4,11 @@ const Admin = require("../../models/admin/Admin");
 const jwt = require('jsonwebtoken');
 
 
-exports.validateAdminLoginUsername = [
-    check('username')
-        .exists().withMessage('Username should be provided').bail(),
+exports.validateAdminLoginEmail = [
+    check('email')
+        .exists().withMessage('Email should be provided').bail()
+        .isEmail().withMessage('Email format is incorrect').bail()
+        .normalizeEmail({gmail_remove_dots: false}),
     check('password')
         .exists().withMessage("Password is missing").bail()
         .isString()
@@ -21,15 +23,42 @@ exports.validateAdminLoginUsername = [
     }
 ]
 
+exports.adminVerifyToken = (req, res, next) => {
+    const token = req.get('token');
+    jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+        if(err){
+            return res.sendStatus(401);
+        }
+        else{
+            res.json({admin: decoded.admin});
+        }
+    });
+}
+
 exports.adminIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
     jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
         if(err){
-            return next({status: 400, message: 'Invalid Token'})
+            return res.sendStatus(401);
         }
         else{
-            req.body.payload = decoded;
             next();
+        }
+    });
+}
+
+exports.refreshToken = (req, res, next) => {
+    const token = req.get('token');
+    jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+        if(err){
+            return res.sendStatus(401);
+        }
+        else{
+            Admin.findOne({_id: decoded.admin._id})
+            .then(admin => {
+                const accessToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '15s'});
+                res.json({accessToken, admin});
+            })
         }
     });
 }

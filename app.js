@@ -1,6 +1,5 @@
 const createError = require('http-errors');
 const express = require('express');
-const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
@@ -15,8 +14,8 @@ const app = express();
 app.set('secret_key', process.env.SECRET_KEY);
 app.use(cors());
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
 
 // Routers
 
@@ -66,8 +65,8 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(express.json());
+app.use(express.urlencoded({extended: false}))
 
 //Routes
 app.use('/api/category', categoryRouter);
@@ -80,8 +79,8 @@ app.use('/api/product', productRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/advertisement', adsRouter);
 
-app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.location}));
-app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.location)));
+app.post('/api/upload', upload.single('photo'), (req, res) => {console.log(req.file);res.json({location: req.file.Location})});
+app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));
 
 app.use(
   "/api",
@@ -111,7 +110,7 @@ app.use((err, req, res, next  ) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  res.status(err.status || 500);
+  res.status = err.status || 500;
   res.json(err);
 });
 

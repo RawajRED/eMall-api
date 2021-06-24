@@ -1,30 +1,34 @@
 const Admin = require('../../models/admin/Admin');
 const FeaturedProduct = require('../../models/other/FeaturedProduct');
 const Order = require('../../models/orders/Order');
+const Store = require('../../models/seller/Store');
+const Seller = require('../../models/seller/Seller');
 const StoreOrder = require('../../models/orders/StoreOrder');
 const ClientPayment = require('../../models/client/ClientPayment');
 const StorePayment = require('../../models/seller/StorePayment');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-exports.adminLoginUsername = (req, res, next) => {
-    Admin.findOne({username: req.body.username})
-    .then(resp => resp.toJSON())
+exports.adminLoginEmail = (req, res, next) => {
+    Admin.findOne({email: req.body.email})
     .then(admin => {
         if(admin){
             bcrypt.compare(req.body.password, admin.password, (err, result) => {
                 delete admin.password;
                 if(err)
-                    return next({status: 500, message: 'Internal Server Error, token unverifiable'});
+                    res.sendStatus(500);
                 if(result){
-                const token = jwt.sign({admin},process.env.SECRET_KEY_ADMIN, { expiresIn: '1d'});
-                next(res.json({status :200, admin, token}))
+                    const accessToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '10h'});
+                    const refreshToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '3d'});
+                    res.json({admin, accessToken, refreshToken})
                 }
-                else next({message: 'Incorrect Password', status: 401});})
+                else res.sendStatus(404)})
             }
-        else next({status: 404, message: 'Username not found'})
+        else res.sendStatus(404)
     })
-    .catch(err => {console.log(err);next({status: 400, message: 'Username not found'})})
+    .catch(err => {
+        res.sendStatus(404)
+    })
 }
 
 exports.adminLogout = (req, res, next) => {
@@ -46,6 +50,26 @@ exports.addFeaturedProduct = (req, res, next) => {
 exports.removeFeaturedProduct = (req, res, next) => {
     FeaturedProduct.findOneAndDelete({product: req.body.product})
     .then(resp => res.json(resp));
+}
+
+exports.getApplyingStores = (req, res, next) => {
+    Store.find({approved: false})
+    .then(resp => res.json(resp))
+    .catch(err => next(err))
+}
+
+exports.getStoreData = (req, res, next) => {
+    Store.findOne({_id: req.params.id})
+    .select('categories subcategories title description page logo reviews created_at performance')
+    .populate('categories')
+    .then(resp => {
+        Seller.find({store: req.params.id})
+        .select('name title email')
+        .then(sellers => {
+            res.json({...resp._doc, sellers})
+        })
+    })
+    .catch(err => next(err))
 }
 
 exports.getReadyOrders = (req, res, next) => {

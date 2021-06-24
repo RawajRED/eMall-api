@@ -95,7 +95,10 @@ const clientSchema = new Schema({
             type: String,
             required: true
         },
-        extra: String,
+        extra: {
+            type: String,
+            default: ''
+        },
         active: {
             type: Boolean,
             default: false

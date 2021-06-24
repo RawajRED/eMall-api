@@ -103,7 +103,7 @@ exports.getStoreProductsByCategory = (req, res, next) => {
     })
     .then(async stores => {
         const _stores = stores.map(async store => {
-            store.products = await Product.find({store, category: req.body.category})
+            store.products = await Product.find({store, category: req.body.category,isDeleted : false})
             .select('title description discount price currency images options category extraText extraImage')
             .populate('dealOfTheDay')
             .sort('title.en')
@@ -127,7 +127,7 @@ exports.getStoreProductsByCategoryFull = (req, res, next) => {
     .sort('title')
     .populate({
         path: 'products',
-        match: {category: req.body.category, stock: {$gt: 0}},
+        match: {category: req.body.category, isDeleted : false,stock: {$gt: 0}},
         select: 'title description discount price currency images options category',
         populate: 'dealOfTheDay',
         sort: 'title.en'
@@ -157,7 +157,7 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
     .then(async stores => {
         console.log('looking for filter', req.body.filter);
         const _stores = stores.map(async store => {
-            const match = {store, subcategory}
+            const match = {store, subcategory,isDeleted:false}
             if(req.body.filter) match.filter =  req.body.filter;
             store.products = await Product.find(match)
             .select('title description discount price currency images options category extraText extraImage')
@@ -179,7 +179,7 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
 exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     const subcategory = req.body.subcategory;
     const category = subcategory.category;
-    const match = {subcategory: req.body.subcategory._id, stock: {$gt: 0}};
+    const match = {isDeleted:false,subcategory: req.body.subcategory._id, stock: {$gt: 0}};
     if(req.body.filter !== '')
         match.filter = req.body.filter;
     console.log(match)
@@ -199,7 +199,7 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     })
     .then(async stores => {
         const _stores = stores.map(async store => {
-            const match = {store, subcategory}
+            const match = {store, subcategory,isDeleted:false}
             if(req.body.filter) match.filter =  req.body.filter;
             store.products = await Product.find(match)
             .select('title description discount price currency images options category extraText extraImage')
@@ -315,7 +315,7 @@ exports.getOwnProducts = (req, res, next) => {
     const store = req.body.store;
     const criteria = req.params.search || '';
     console.log('store', store, 'criteria', criteria)
-    Product.find({store: store._id, $or: [
+    Product.find({store: store._id,isDeleted:false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
         },
@@ -343,7 +343,7 @@ exports.getPopularProducts = (req, res, next) => {
         })
         let keys = Object.keys(arr);
         keys = keys.slice(0, 4);
-        Product.find({_id: {$in: keys}})
+        Product.find({_id: {$in: keys}, isDeleted:false})
         .populate('dealOfTheDay')
         .select('title images')
         .then(products => {

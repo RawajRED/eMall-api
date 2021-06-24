@@ -250,7 +250,7 @@ exports.clientDeleteAccount = (req, res, next) => {
 exports.clientSubtotal = (req, res, next) => {
     const client = req.body.client;
     Cart.findOne({client})
-    .populate('products.product')
+    .populate({path :'products.product',match :{isDeleted:false}})
     .then(cart => {
         let subtotal = 0;
         const productIDs = cart.products.map(prod => prod.product._id);
@@ -281,7 +281,7 @@ exports.clientSubtotal = (req, res, next) => {
 exports.clientTotal = (req, res, next) => {
     const client = req.body.client;
     Cart.findOne({client})
-    .populate('products.product')
+    .populate({path :'products.product',match :{isDeleted:false}})
     .then(cart => {
         let subtotal = 0;
         const productIDs = cart.products.map(prod => prod.product._id);
@@ -423,7 +423,7 @@ exports.removeFromCart = (req, res, next) => {
 exports.getClientWishlist = (req, res, next) => {
     const client = req.body.client;
     Wishlist.findOne({client})
-    .populate('products')
+    .populate({path :'products',match :{isDeleted:false}})
     .then(resp => resp.toJSON())
     .then(resp => res.json(resp))
     .catch(err => next({status: 404, message: "Couldn't find wishlist"}))
@@ -442,7 +442,7 @@ exports.addToWishlist = (req, res, next) => {
     const product = req.body.product;
 
     Wishlist.findOne({client})
-    .populate('products')
+    .populate({path :'products',match :{isDeleted:false}})
     .then(_wishlist => {
         if(_wishlist.products.filter(prod => {
             return prod._id.toString() === product
@@ -452,7 +452,7 @@ exports.addToWishlist = (req, res, next) => {
         else {
             Wishlist.findOneAndUpdate({client}, {$push: {
                 products: product}}, {new: true})
-            .populate('products')
+            .populate({path :'products',match :{isDeleted:false}})
             .then((wishlist) => res.json(wishlist))
             .catch(err => next(err))
         }
@@ -492,7 +492,8 @@ exports.getOrders = (req, res, next) => {
     Order.find({client})
     .populate({
         path: 'storeOrders',
-        populate: 'orders.product'
+        populate: 'orders.product',
+        match : {isDeleted : false}
     })
     .sort({'created_at': -1})
     .then(resp => res.json(resp))
@@ -509,7 +510,8 @@ exports.placeOrder = (req, res, next) => {
     Cart.findOne({client})
     .populate({
         path: 'products.product',
-        select: 'options price store discount'
+        select: 'options price store discount',
+        match : {isDeleted : false }
     })
     .populate({
         path: 'client',

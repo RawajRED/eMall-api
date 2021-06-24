@@ -14,7 +14,7 @@ exports.getProductVariant = (req, res, next) => {
 
 exports.getVariant = (req, res, next) => {
     console.log('getting vars')
-    Product.findOne({_id: req.params.id})
+    Product.findOne({_id: req.params.id,isDeleted : false})
     .then(prod => {
         ProductVariant.findOne({_id: prod.variants})
         .populate('products.product')
@@ -116,7 +116,7 @@ exports.sms = (req, res, next) => {
 
 exports.getProductVariants = (req, res, next) => {
     ProductVariant.findOne({'products.product': req.params.product})
-    .populate({path: 'products.product', select: 'title images'})
+    .populate({path: 'products.product', match : {isDeleted : false }, select: 'title images'})
     .then(variants => {
         res.json(variants);
     })

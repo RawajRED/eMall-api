@@ -79,7 +79,7 @@ app.use('/api/product', productRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/advertisement', adsRouter);
 
-app.post('/api/upload', upload.single('photo'), (req, res) => {console.log(req.file);res.json({location: req.file.Location})});
+app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
 app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));
 
 app.use(
@@ -105,7 +105,6 @@ app.use((req, res, next) => {
 
 // error handler
 app.use((err, req, res, next  ) => {
-  console.log(err)
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

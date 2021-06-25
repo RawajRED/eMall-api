@@ -6,6 +6,7 @@ const Seller = require('../../models/seller/Seller');
 const StoreOrder = require('../../models/orders/StoreOrder');
 const ClientPayment = require('../../models/client/ClientPayment');
 const StorePayment = require('../../models/seller/StorePayment');
+const Product = require('../../models/seller/product/Product');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -41,19 +42,14 @@ exports.adminLogout = (req, res, next) => {
 
 }
 
-exports.addFeaturedProduct = (req, res, next) => {
-    FeaturedProduct.create({product: req.body.product})
-    .then(resp => resp.toJSON())
-    .then(resp => res.json(resp));
-}
-
-exports.removeFeaturedProduct = (req, res, next) => {
-    FeaturedProduct.findOneAndDelete({product: req.body.product})
-    .then(resp => res.json(resp));
-}
-
 exports.getApplyingStores = (req, res, next) => {
-    Store.find({approved: false})
+    Store.find({approved: false, isDeleted: {$in: [null, false]}})
+    .then(resp => res.json(resp))
+    .catch(err => next(err))
+}
+
+exports.getDeletedStores = (req, res, next) => {
+    Store.find({isDeleted: true})
     .then(resp => res.json(resp))
     .catch(err => next(err))
 }
@@ -73,6 +69,17 @@ exports.approveStore = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.getAllStores = (req, res, next) => {
+    Store.find({...req.body.ciretia, approved: true, isDeleted: {$in: [null, false]}})
+    .populate('categories')
+    .then(resp => {
+        console.log(resp, req.body.criteria)
+        res.json(resp);
+    })
+    .catch(err => next(err))
+}
+
+
 exports.getStoreData = (req, res, next) => {
     Store.findOne({_id: req.params.id})
     .populate('categories')
@@ -85,6 +92,27 @@ exports.getStoreData = (req, res, next) => {
     })
     .catch(err => next(err))
 }
+
+exports.deleteStore = (req, res, next) => {
+    Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: true})
+    .then(() => res.sendStatus(200))
+    .catch(err => next(err));
+}
+
+exports.revertStore = (req, res, next) => {
+    console.log('reverting ', req.params.id)
+    Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: false}, {new: true})
+    .then(resp => {
+        Seller.find({store: req.params.id})
+        .select('name title email')
+        .then(sellers => {
+            res.json({...resp._doc, sellers})
+        })
+    })
+    .catch(err => next(err));
+}
+
+// * Orders
 
 exports.getReadyOrders = (req, res, next) => {
     Order
@@ -144,4 +172,44 @@ exports.wipeOrders = (req, res, next) => {
         StoreOrder.deleteMany({})
         .then(() => res.json({resp: 'Bye Bye Orders :('}))
     })
+}
+
+// * Featured Products
+
+exports.getFeaturedProducts = (req, res, next) => {
+    FeaturedProduct.find({})
+    .populate({
+        path: 'product',
+        populate: 'store'
+    })
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.addFeaturedProducts = (req, res ,next) => {
+    FeaturedProduct.create(req.body.products.map(prod => ({product: prod})))
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.removeFeaturedProduct = (req, res, next) => {
+    console.log('deleting', req.query.id)
+    FeaturedProduct.findOneAndDelete({_id: req.query.id})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.searchProducts = (req, res, next) => {
+    const criteria = req.body.search || '';
+    Product.find({$or: [
+        {
+            "title.en": {$regex: criteria, $options: "i"}
+        },
+        {
+            "title.ar": {$regex: criteria, $options: "i"}
+        }
+    ]})
+    .populate('store')
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
 }

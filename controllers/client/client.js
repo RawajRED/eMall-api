@@ -186,7 +186,7 @@ exports.clientVerifyOtp = (req, res, next) => {
 }
 
 exports.clientForgotPassword = (req, res, next) => {
-    const otp = createId(4);
+    const otp = generateOtp(4);
     Client.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
     .then(client => {
         console.log(client);
@@ -345,7 +345,7 @@ exports.addToCart = (req, res, next) => {
     const options = req.body.options;
     const text = req.body.text;
     const image = req.body.image;
-    const code = createId(7);
+    const code = generateOtp(7);
 
     Cart.findOne({client})
     .then(_cart => {
@@ -504,7 +504,7 @@ exports.getOrders = (req, res, next) => {
 */
 exports.placeOrder = (req, res, next) => {
     const client = req.body.client;
-    const code = createId(7);
+    const code = generateOtp(7);
 
     // ! Get Cart Content
     Cart.findOne({client})

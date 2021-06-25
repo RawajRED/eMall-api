@@ -37,7 +37,6 @@ exports.adminVerifyToken = (req, res, next) => {
 
 exports.adminIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
-    console.log('thy token is', token)
     jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
         if(err){
             return res.sendStatus(401);

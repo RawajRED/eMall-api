@@ -3,9 +3,7 @@ const Store = require('../../models/seller/Store');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-const generateOtp = () => {
-    return 'ABCDE';
-}
+const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
 
 exports.createSeller = (req, res, next) => {
 

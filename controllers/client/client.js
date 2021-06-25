@@ -18,7 +18,7 @@ exports.clientRegisterEmail = (req, res, next) => {
     bcrypt.hash(password, saltRounds, (err, hash) => {
         if(err)
             return next({status: 500, message: 'Internal Server Error'})
-        const otp = createId(5);
+        const otp = generateOtp(5);
         const client = {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -673,12 +673,5 @@ exports.getPayments = (req, res, next) => {
 /*                               HELPER FUNCTION                              */
 /* -------------------------------------------------------------------------- */
 
-const createId = (length) => {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    var charactersLength = characters.length;
-    for ( let i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
- }
+
+const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");

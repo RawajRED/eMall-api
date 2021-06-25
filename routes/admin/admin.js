@@ -8,6 +8,7 @@ router.post('/login', adminValidators.validateAdminLoginEmail, admin.adminLoginE
 router.post('/logout', admin.adminLogout);
 
 router.get('/stores/applying', adminValidators.adminIsLoggedIn, admin.getApplyingStores);
+router.post('/stores/approve', adminValidators.adminIsLoggedIn, admin.approveStore);
 router.get('/stores/:id', adminValidators.adminIsLoggedIn, admin.getStoreData);
 
 router.post('/featured-product', admin.addFeaturedProduct);

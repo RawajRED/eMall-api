@@ -58,9 +58,23 @@ exports.getApplyingStores = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.approveStore = (req, res, next) => {
+    console.log('shit coming', req.body)
+    Store.findOneAndUpdate({_id: req.body.id}, {approved: true}, {new: true})
+    .populate('categories')
+    .then(resp => {
+        Seller.find({store: req.body.id})
+        .select('name title email')
+        .then(sellers => {
+            console.log(resp, sellers);
+            res.json({...resp._doc, sellers})
+        })
+    })
+    .catch(err => next(err))
+}
+
 exports.getStoreData = (req, res, next) => {
     Store.findOne({_id: req.params.id})
-    .select('categories subcategories title description page logo reviews created_at performance')
     .populate('categories')
     .then(resp => {
         Seller.find({store: req.params.id})

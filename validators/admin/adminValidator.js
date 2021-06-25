@@ -37,6 +37,7 @@ exports.adminVerifyToken = (req, res, next) => {
 
 exports.adminIsLoggedIn = (req, res, next) => {
     const token = req.get('token');
+    console.log('thy token is', token)
     jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
         if(err){
             return res.sendStatus(401);
@@ -56,7 +57,7 @@ exports.refreshToken = (req, res, next) => {
         else{
             Admin.findOne({_id: decoded.admin._id})
             .then(admin => {
-                const accessToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '15s'});
+                const accessToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '3h'});
                 res.json({accessToken, admin});
             })
         }

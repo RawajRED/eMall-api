@@ -73,6 +73,10 @@ const storeSchema = new Schema({
     performance: {
         type: Number,
         default: 0
+    },
+    isDeleted : {
+        type : Boolean,
+        default : false
     }
 }, {timestamps: { createdAt: 'created_at'}});
 

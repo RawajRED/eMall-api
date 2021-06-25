@@ -82,6 +82,10 @@ const productSchema = new Schema({
     dealOfTheDay: {
         type: Schema.Types.ObjectId,
         ref: 'DealOfTheDay'
+    },
+    isDeleted : {
+        type : Boolean,
+        default : false 
     }
 }, {timestamps: {createdAt: 'created_at', updatedAt: 'updated_at'}});
 

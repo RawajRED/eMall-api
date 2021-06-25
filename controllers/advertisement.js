@@ -213,7 +213,7 @@ exports.updateBannerAd = (req, res, next) => {
 exports.getDealsOfTheDay = (req, res, next) => {
     DealsOfTheDay.find({active: true})
     .sort({discount: -1})
-    .populate({path: 'product', select: 'title images price'})
+    .populate({path: 'product', match :{isDeleted :false},select: 'title images price'})
     .populate({path: 'store', select: 'title'})
     .then(resp => res.json(resp))
     .catch(err => next(err));
@@ -222,7 +222,7 @@ exports.getDealsOfTheDay = (req, res, next) => {
 exports.getFullDealsOfTheDay = (req, res, next) => {
     DealsOfTheDay.find({active: true})
     .sort({discount: -1})
-    .populate({path: 'product', populate: 'dealOfTheDay store'})
+    .populate({path: 'product', match :{isDeleted :false}, populate: 'dealOfTheDay store'})
     .populate({path: 'store', select: 'title'})
     .then(resp => res.json(resp))
     .catch(err => next(err));
@@ -231,7 +231,7 @@ exports.getFullDealsOfTheDay = (req, res, next) => {
 exports.getOwnDealsOfTheDay = (req, res, next) => {
     const store = req.body.store;
     DealsOfTheDay.find({store: store._id})
-    .populate('product')
+    .populate({path : 'product', match :{isDeleted :false}})
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
@@ -281,7 +281,8 @@ exports.getFeaturedProducts = (req, res, next) => {
     FeaturedProduct.find({})
     .populate({
         path: 'product',
-        populate: 'store'
+        populate: 'store',
+        match :{isDeleted :false}
     })
     .limit(5)
     .then(resp => res.json(resp));

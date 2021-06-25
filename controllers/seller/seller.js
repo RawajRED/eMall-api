@@ -230,5 +230,6 @@ const createId = (length) => {
     for ( let i = 0; i < length; i++ ) {
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
+    // create ID
     return result;
  }

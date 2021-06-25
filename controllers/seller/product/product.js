@@ -34,7 +34,7 @@ exports.createProductsBulk = (req, res, next) => {
 
 
 exports.getProductById = (req, res, next) => {
-    Product.findOne({_id: req.params.id})
+    Product.findOne({_id: req.params.id , isDeleted : false})
     .populate({
         path: 'store',
         select: 'logo title categories'
@@ -58,7 +58,7 @@ exports.getProductById = (req, res, next) => {
 
 exports.findByCategory = (req, res ,next) => {
     const category = req.body.id;
-    const match = {category};
+    const match = {category, isDeleted:false};
     if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
@@ -71,7 +71,7 @@ exports.findByCategory = (req, res ,next) => {
 exports.findByCategoryFull = (req, res ,next) => {
     const category = req.body.id;
     console.log('skipping by ', req.body.skip)
-    const match = {category, $or: [
+    const match = {category,isDeleted:false, $or: [
         {
             "title.en": {$regex: req.body.search, $options: "i"}
         },
@@ -90,7 +90,7 @@ exports.findByCategoryFull = (req, res ,next) => {
 
 exports.findBySubcategory = (req, res, next) => {
     const subcategory = req.body.id;
-    const match = {subcategory};
+    const match = {subcategory, isDeleted:false};
     if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
@@ -102,7 +102,7 @@ exports.findBySubcategory = (req, res, next) => {
 
 exports.findBySubcategoryFull = (req, res, next) => {
     const subcategory = req.body.id;
-    const match = {subcategory, $or: [
+    const match = {subcategory, isDeleted:false, $or: [
         {
             "title.en": {$regex: req.body.search, $options: "i"}
         },
@@ -121,7 +121,7 @@ exports.findBySubcategoryFull = (req, res, next) => {
 
 exports.getMoreFromSeller = (req, res, next) => {
     const product = req.body;
-    Product.find({$or: [
+    Product.find({ isDeleted:false, $or: [
         {subcategory: product.subcategory, store: product.store, _id: {$ne: product._id}},
         {category: product.category, store: product.store, _id: {$ne: product._id}},
         {store: product.store, _id: {$ne: product._id}}
@@ -134,7 +134,7 @@ exports.getMoreFromSeller = (req, res, next) => {
 
 exports.getDeals = (req, res, next) => {
     console.log('getting deals')
-    Product.find({discount: {$gt: 0}}).sort({updated_at: 1})
+    Product.find({ isDeleted:false,discount: {$gt: 0}}).sort({updated_at: 1})
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))
     .catch(err => next(err));
@@ -150,7 +150,7 @@ exports.getReviews = (req, res, next) => {
 
 exports.getSimilarProducts = (req, res, next) => {
     const product = req.body.product;
-    Product.find({$or: [
+    Product.find({ isDeleted:false, $or: [
         {category: product.category, store: product.store},
         {category: product.category},
         {subcategory: product.subcategory}
@@ -162,7 +162,7 @@ exports.getSimilarProducts = (req, res, next) => {
 }
 
 exports.getStoreProducts = (req, res, next) => {
-    Product.find({store: req.params.id})
+    Product.find({store: req.params.id , isDeleted:false})
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))
     .catch(err => next(err));
@@ -170,7 +170,7 @@ exports.getStoreProducts = (req, res, next) => {
 
 exports.findProduct = (req, res, next) => {
     const criteria = req.body.criteria;
-    Product.find({$or: [
+    Product.find({ isDeleted:false,$or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
         },
@@ -186,27 +186,27 @@ exports.findProduct = (req, res, next) => {
 
 exports.updateProduct = (req, res, next) => {
     console.log(' o hi maerk')
-    Product.findOneAndUpdate({_id: req.body.product._id}, req.body.product, {new: true})
+    Product.findOneAndUpdate({_id: req.body.product._id, isDeleted:false}, req.body.product, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: "Couldn't find the specificed Product"}))
     .catch(err => next(err));
 }
 
 exports.updateProductOptions = (req, res, next) => {
-    Product.findOneAndUpdate({_id: req.body.product._id}, req.body.product, {new: true})
+    Product.findOneAndUpdate({_id: req.body.product._id, isDeleted:false}, req.body.product, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: "Couldn't find the specificed Product"}))
     .catch(err => next(err));
 }
 
 exports.addProductOptionsAddParam = (req, res, next) => {
     console.log('id', req.body.optionId, 'options', req.body.option)
-    Product.findOneAndUpdate({'options._id': req.body.optionId}, {$push: {'options.$[element].options': req.body.option}}, {new: true, arrayFilters: [{'element._id': req.body.optionId}]})
+    Product.findOneAndUpdate({'options._id': req.body.optionId , isDeleted:false}, {$push: {'options.$[element].options': req.body.option}}, {new: true, arrayFilters: [{'element._id': req.body.optionId}]})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: "Couldn't find the specificed Product"}))
     .catch(err => next(err));
 }
 
 exports.updateProductOptionsAddParam = async (req, res, next) => {
     // console.log('id', req.body.optionId, 'innerOption', req.body.innerOptionId, 'options', req.body.option)
-    const product = await Product.findOne({_id: req.body.productId});
+    const product = await Product.findOne({_id: req.body.productId , isDeleted:false});
     // console.log(product.options)
     product.options = product.options.map(option => {
         if(option._id.toString() === req.body.optionId){
@@ -234,7 +234,8 @@ exports.updateProductOptionsAddParam = async (req, res, next) => {
 }
 
 exports.deleteProduct = (req, res, next) => {
-    Product.remove(req.body)
+
+    Product.findOneAndUpdate(req.body, {isDeleted:true},{new:true})
     .then(resp => res.json(resp))
     .catch(err => next({status: 500, message: 'Internal Server Error'}))
 }

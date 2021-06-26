@@ -26,7 +26,7 @@ cron.schedule('59 23 * * *', () => {
 });
 
 exports.getStore = (req, res, next) => {
-    Store.findOne({_id: req.params.id})
+    Store.findOne({_id: req.params.id, isDeleted : false})
     .select('categories subcategories title description page logo reviews')
     .populate('categories')
     .populate({

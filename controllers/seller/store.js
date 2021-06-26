@@ -92,7 +92,7 @@ exports.updateStore = (req, res, next) => {
 
 exports.getStoreProductsByCategory = (req, res, next) => {
     console.log('BODY', req.body)
-    Store.find({categories: req.body.category})
+    Store.find({categories: req.body.category,isDeleted:false})
     .select('title description categories logo reviews')
     .sort('title')
     .limit(10)
@@ -122,7 +122,7 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 
 exports.getStoreProductsByCategoryFull = (req, res, next) => {
     console.log('skipping by ', req.body.skip)
-    Store.find({categories: req.body.category, products: { $not: {$size: 0}}})
+    Store.find({categories: req.body.category, isDeleted:false,products: { $not: {$size: 0}}})
     .select('title description categories products logo reviews')
     .sort('title')
     .populate({
@@ -145,7 +145,7 @@ exports.getStoreProductsByCategoryFull = (req, res, next) => {
 exports.getStoreProductsBySubcategory = (req, res, next) => {
     const subcategory = req.body.subcategory;
     const category = subcategory.category;
-    Store.find({categories: category, products: { $not: {$size: 0}}})
+    Store.find({categories: category,isDeleted:false,products: { $not: {$size: 0}}})
     .select('title description categories logo reviews')
     .sort('title')
     .limit(10)
@@ -183,7 +183,7 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     if(req.body.filter !== '')
         match.filter = req.body.filter;
     console.log(match)
-    Store.find({categories: category, products: { $not: {$size: 0}}})
+    Store.find({categories: category,isDeleted:false, products: { $not: {$size: 0}}})
     .select('title description categories products logo')
     .populate({
         path: 'products',
@@ -222,7 +222,7 @@ exports.getSimilarStores = (req, res, next) => {
     const arr = req.body.store.categories.map(cat => ({
         categories: cat
     }));
-    Store.find().or(arr)
+    Store.find({isDeleted:false}).or(arr)
     .populate('categories')
     .select('title categories logo')
     .then(store => res.json(store))
@@ -230,7 +230,7 @@ exports.getSimilarStores = (req, res, next) => {
 }
 
 exports.getMostPopularStores = (req, res, next) => {
-    Store.find().populate('categories')
+    Store.find({isDeleted:false}).populate('categories')
     .then(store => res.json(store))
     .catch(err => next(err))
 }

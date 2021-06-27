@@ -1,4 +1,3 @@
-const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -7,6 +6,9 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const cors = require('cors');
 const { upload } = require('./s3');
+
+const Variables = require('./models/other/Variables');
+const {getVariables, changeVariables} = require('./variables');
 
 
 require('dotenv').config();
@@ -18,12 +20,6 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
 // Routers
-
-// Cause an intentional delay
-// app.use( ( req, res, next ) => {
-//   setTimeout(next, 2000);
-// });
-
 const clientRouter = require('./routes/client/client');
 const sellerRouter = require('./routes/seller/seller');
 const storeRouter = require('./routes/seller/store');
@@ -46,7 +42,13 @@ mongoose.connect(
     useUnifiedTopology: true
   }
 )
-.then(() => console.log('Connection to the database successful'));
+.then(() => {
+  console.log('Connection to the database successful');
+  Variables.findOne({})
+  .then(resp => {
+    changeVariables(resp);
+  });
+});
 
 
 // Setup SwaggerUI
@@ -81,6 +83,8 @@ app.use('/api/advertisement', adsRouter);
 
 app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
 app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));
+
+app.get('/api/variables', (req, res) => Variables.findOne({}).then(resp => res.json(resp)));
 
 app.use(
   "/api",

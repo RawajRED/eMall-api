@@ -7,8 +7,10 @@ const StoreOrder = require('../../models/orders/StoreOrder');
 const ClientPayment = require('../../models/client/ClientPayment');
 const StorePayment = require('../../models/seller/StorePayment');
 const Product = require('../../models/seller/product/Product');
+const Variables = require('../../models/other/Variables');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { changeVariables, getVariables } = require('../../variables');
 
 exports.adminLoginEmail = (req, res, next) => {
     Admin.findOne({email: req.body.email})
@@ -43,7 +45,7 @@ exports.adminLogout = (req, res, next) => {
 }
 
 exports.getApplyingStores = (req, res, next) => {
-    Store.find({approved: false, isDeleted: {$in: [null, false]}})
+    Store.find({approved: false, isDeleted: false})
     .then(resp => res.json(resp))
     .catch(err => next(err))
 }
@@ -70,7 +72,7 @@ exports.approveStore = (req, res, next) => {
 }
 
 exports.getAllStores = (req, res, next) => {
-    Store.find({...req.body.ciretia, approved: true, isDeleted: {$in: [null, false]}})
+    Store.find({...req.body.ciretia, approved: true, isDeleted: false})
     .populate('categories')
     .then(resp => {
         console.log(resp, req.body.criteria)
@@ -117,12 +119,14 @@ exports.revertStore = (req, res, next) => {
 exports.getReadyOrders = (req, res, next) => {
     Order
         .find({status: req.params.status})
-        .populate('storeOrders')
+        .populate({path: 'storeOrders', populate: [{path: 'orders.product', select: 'title price'}, {path: 'store', select: 'title logo'}]})
+        .populate({path: 'client', select: 'firstName lastName'})
         .then(resp => res.json(resp))
         .catch(err => next(err));
 }
 
 exports.changeOrderStatus = (req, res, next) => {
+    console.log('changing status', req.body)
     Order
         .findOneAndUpdate({_id: req.body.id}, {status: req.body.status}, {new: true})
         .then(resp => res.json(resp))
@@ -172,6 +176,18 @@ exports.wipeOrders = (req, res, next) => {
         StoreOrder.deleteMany({})
         .then(() => res.json({resp: 'Bye Bye Orders :('}))
     })
+}
+
+// * Variables
+
+exports.changeVariables = (req, res, next) => {
+    Variables.findOneAndUpdate({}, req.body, {upsert: true, new: true})
+    .then(resp => {
+        changeVariables(resp);
+        console.log('new vars', getVariables(), 'from resp', resp)
+        res.json(resp);
+    })
+    .catch(err => next(err));
 }
 
 // * Featured Products

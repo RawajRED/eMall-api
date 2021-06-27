@@ -430,6 +430,7 @@ exports.getRevenueForOrder = (req, res, next) => {
 }
 
 exports.getCredit = (req, res, next) => {
+console.log(req.body);
     const store = req.body.store;
     Store.findOne({_id: store._id})
     .select('credit')

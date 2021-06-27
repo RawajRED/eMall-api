@@ -29,6 +29,7 @@ router.delete('/orders/wipe', adminValidators.adminIsLoggedIn, admin.wipeOrders)
 router.post('/variables', admin.changeVariables);
 
 router.get('/refresh', adminValidators.refreshToken);
+router.post('/', adminValidators.adminIsLoggedIn, admin.createNewAdmin);
 router.get('/', adminValidators.adminVerifyToken);
 
 module.exports = router;

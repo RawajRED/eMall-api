@@ -84,7 +84,7 @@ app.use('/api/advertisement', adsRouter);
 app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
 app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));
 
-app.get('/api/variables', (req, res) => Variables.findOne({}).then(resp => res.json(resp)));
+app.get('/api/variables', (req, res) => res.json(getVariables()));
 
 app.use(
   "/api",

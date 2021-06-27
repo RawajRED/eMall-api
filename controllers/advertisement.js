@@ -5,6 +5,7 @@ const DealsOfTheDay = require('../models/other/DealOfTheDay');
 const Store = require('../models/seller/Store');
 const Product = require('../models/seller/product/Product');
 const FeaturedProduct = require('../models/other/FeaturedProduct');
+const { getVariables } = require('../variables');
 
 const cron = require('node-cron');
 
@@ -124,7 +125,7 @@ exports.updateHighestBidder = (req, res, next) => {
             })
             .catch(err => next(err));
         }
-        else if(newAd.bid >= currAd.bid + 10){
+        else if(newAd.bid >= currAd.bid + getVariables().homeAd){
             Store.findOneAndUpdate({_id: currAd.store}, {$inc: {credit: currAd.bid}}, {new: true})
             .then(resp => console.log(`Updated old credit (${resp.title})`, resp.credit));
             Store.findOneAndUpdate({_id: newAd.store}, {$inc: {credit: newAd.bid * -1}})
@@ -166,7 +167,7 @@ exports.getOwnBanners = (req, res, next) => {
 
 exports.createBannerAd = (req, res, next) => {
     const store = req.body.store;
-    Store.findOneAndUpdate({_id: store._id, credit: {$gte: 20}}, {$inc: {credit: -20}}, {new: true})
+    Store.findOneAndUpdate({_id: store._id, credit: {$gte: getVariables().bannerAd}}, {$inc: {credit: -1 * getVariables().bannerAd}}, {new: true})
     .then(resp => {
                 if(!resp)
                     next({status: 400, message: "You do not have enough store credits"})
@@ -245,8 +246,8 @@ exports.createDealOfTheDay = (req, res, next) => {
         else {
             Store.findOne({_id: store._id})
             .then(resp => {
-                if(resp.credit >= 50){
-                    Store.findOneAndUpdate({_id: store._id}, {$inc: {credit: -50}}, {new: true})
+                if(resp.credit >= getVariables().dealOfTheDay){
+                    Store.findOneAndUpdate({_id: store._id}, {$inc: {credit: -1 * getVariables().dealOfTheDay}}, {new: true})
                     .then(resp => {
                         if(!resp)
                             next({status: 404, message: `Couldn't find store`});

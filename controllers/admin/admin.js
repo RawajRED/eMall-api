@@ -134,6 +134,7 @@ exports.changeOrderStatus = (req, res, next) => {
 }
 
 exports.fulfillPayment = async (req, res, next) => {
+    console.log('fulfilling order')
     const order = await Order.findOne({_id: req.body.id}).populate({path: 'storeOrders', populate: 'orders.product'});
     order.status = 5;
     await order.save();
@@ -228,4 +229,14 @@ exports.searchProducts = (req, res, next) => {
     .populate('store')
     .then(resp => res.json(resp))
     .catch(err => next(err));
+}
+
+exports.createNewAdmin = (req, res, next) => {
+    const password = req.body.password
+    bcrypt.hash(password, saltRounds, (err, hash) => {
+        Admin.create({email: req.body.email, password: hash})
+        .then(resp => res.sendStatus(200))
+        .catch(err => next(err));
+    }
+    )
 }

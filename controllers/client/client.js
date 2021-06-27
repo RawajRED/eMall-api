@@ -10,6 +10,7 @@ const DealOfTheDay = require('../../models/other/DealOfTheDay');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const sendMail = require('../../sendgrid').sendMail;
+const { getVariables } = require('../../variables');
 
 exports.clientRegisterEmail = (req, res, next) => {
     console.log(req.body);
@@ -300,7 +301,7 @@ exports.clientTotal = (req, res, next) => {
                 });
                 subtotal += (price * cartProd.quantity) * (deal ? 1-(deal.discount/100) : 1) * (product.discount ? 1 - product.discount : 1);
             })
-            const shipping = 80;
+            const shipping = getVariables().shipping;
             const total = subtotal + shipping;
             res.json({subtotal, shipping, total});
         })
@@ -554,7 +555,7 @@ exports.placeOrder = (req, res, next) => {
                 })
                 subtotal += (price * cartProd.quantity) * (deal ? (1-(deal.discount/100)) : 1) * (product.discount ? 1 - product.discount : 1);
             })
-            let total = subtotal + 80;
+            let total = subtotal + getVariables().shipping;
             StoreOrder.insertMany(arr)
             .then(resp => {
                 const storeOrders = resp.map(storeOrder => storeOrder._id);

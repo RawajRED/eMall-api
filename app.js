@@ -21,6 +21,7 @@ app.use(function(req, res, next) {
   next();
 });
 app.set('secret_key', process.env.SECRET_KEY);
+app.options('*', cors());  // enable pre-flight
 app.use(cors());
 
 

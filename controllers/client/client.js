@@ -493,8 +493,7 @@ exports.getOrders = (req, res, next) => {
     Order.find({client})
     .populate({
         path: 'storeOrders',
-        populate: 'orders.product',
-        match : {isDeleted : false}
+        populate: 'orders.product'
     })
     .sort({'created_at': -1})
     .then(resp => res.json(resp))

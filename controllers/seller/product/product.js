@@ -58,7 +58,7 @@ exports.getProductById = (req, res, next) => {
 
 exports.findByCategory = (req, res ,next) => {
     const category = req.body.id;
-    const match = {category, isDeleted:false};
+    const match = {category, isDeleted: false, isStoreDeleted: false};
     if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
@@ -70,7 +70,7 @@ exports.findByCategory = (req, res ,next) => {
 
 exports.findByCategoryFull = (req, res ,next) => {
     const category = req.body.id;
-    const match = {category,isDeleted:false, $or: [
+    const match = {category, isDeleted: false, isStoreDeleted: false, $or: [
         {
             "title.en": {$regex: req.body.search, $options: "i"}
         },
@@ -89,7 +89,7 @@ exports.findByCategoryFull = (req, res ,next) => {
 
 exports.findBySubcategory = (req, res, next) => {
     const subcategory = req.body.id;
-    const match = {subcategory, isDeleted:false};
+    const match = {subcategory, isDeleted: false, isStoreDeleted: false};
     if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
@@ -101,7 +101,7 @@ exports.findBySubcategory = (req, res, next) => {
 
 exports.findBySubcategoryFull = (req, res, next) => {
     const subcategory = req.body.id;
-    const match = {subcategory, isDeleted:false, $or: [
+    const match = {subcategory, isDeleted: false, isStoreDeleted: false, $or: [
         {
             "title.en": {$regex: req.body.search, $options: "i"}
         },
@@ -120,7 +120,7 @@ exports.findBySubcategoryFull = (req, res, next) => {
 
 exports.getMoreFromSeller = (req, res, next) => {
     const product = req.body;
-    Product.find({ isDeleted:false, $or: [
+    Product.find({ isDeleted: false, isStoreDeleted: false, $or: [
         {subcategory: product.subcategory, store: product.store, _id: {$ne: product._id}},
         {category: product.category, store: product.store, _id: {$ne: product._id}},
         {store: product.store, _id: {$ne: product._id}}
@@ -132,7 +132,7 @@ exports.getMoreFromSeller = (req, res, next) => {
 }
 
 exports.getDeals = (req, res, next) => {
-    Product.find({ isDeleted:false,discount: {$gt: 0}}).sort({updated_at: 1})
+    Product.find({ isDeleted: false, isStoreDeleted: false, discount: {$gt: 0}}).sort({updated_at: 1})
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))
     .catch(err => next(err));
@@ -148,7 +148,7 @@ exports.getReviews = (req, res, next) => {
 
 exports.getSimilarProducts = (req, res, next) => {
     const product = req.body.product;
-    Product.find({ isDeleted:false, $or: [
+    Product.find({ isDeleted:false, isStoreDeleted: false, $or: [
         {category: product.category, store: product.store},
         {category: product.category},
         {subcategory: product.subcategory}
@@ -160,7 +160,7 @@ exports.getSimilarProducts = (req, res, next) => {
 }
 
 exports.getStoreProducts = (req, res, next) => {
-    Product.find({store: req.params.id , isDeleted:false})
+    Product.find({store: req.params.id, isDeleted: false, isStoreDeleted: false})
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))
     .catch(err => next(err));
@@ -168,7 +168,7 @@ exports.getStoreProducts = (req, res, next) => {
 
 exports.findProduct = (req, res, next) => {
     const criteria = req.body.criteria;
-    Product.find({ isDeleted:false,$or: [
+    Product.find({ isDeleted: false, isStoreDeleted: false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
         },

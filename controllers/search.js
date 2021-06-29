@@ -7,7 +7,7 @@ exports.searchInput = (req, res, next) => {
     const criteria = req.body.criteria;
     const promises = [];
     promises.push(Store.find({title: {$regex: criteria, $options: "i"}}).limit(4).select('title').lean().exec())
-    promises.push(Product.find({isDeleted : false ,$or: [
+    promises.push(Product.find({isDeleted : false, isStoreDeleted: false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
         },

@@ -86,6 +86,10 @@ const productSchema = new Schema({
     isDeleted : {
         type : Boolean,
         default : false 
+    },
+    isStoreDeleted : {
+        type : Boolean,
+        default : false 
     }
 }, {timestamps: {createdAt: 'created_at', updatedAt: 'updated_at'}});
 

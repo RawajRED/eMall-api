@@ -8,6 +8,7 @@ const cors = require('cors');
 const { upload } = require('./s3');
 
 const Variables = require('./models/other/Variables');
+const Product = require('./models/seller/product/Product');
 const {getVariables, changeVariables} = require('./variables');
 
 

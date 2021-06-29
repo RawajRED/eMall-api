@@ -99,7 +99,7 @@ exports.getStoreProductsByCategory = (req, res, next) => {
     })
     .then(async stores => {
         const _stores = stores.map(async store => {
-            store.products = await Product.find({store, category: req.body.category,isDeleted : false})
+            store.products = await Product.find({store, category: req.body.category, isDeleted : false, isStoreDeleted: false})
             .select('title description discount price currency images options category extraText extraImage')
             .populate('dealOfTheDay')
             .sort('title.en')
@@ -150,7 +150,7 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
     })
     .then(async stores => {
         const _stores = stores.map(async store => {
-            const match = {store, subcategory,isDeleted:false}
+            const match = {store, subcategory, isDeleted:false, isStoreDeleted: false}
             if(req.body.filter) match.filter =  req.body.filter;
             store.products = await Product.find(match)
             .select('title description discount price currency images options category extraText extraImage')
@@ -189,7 +189,7 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     })
     .then(async stores => {
         const _stores = stores.map(async store => {
-            const match = {store, subcategory,isDeleted:false}
+            const match = {store, subcategory, isDeleted:false, isStoreDeleted: false}
             if(req.body.filter) match.filter =  req.body.filter;
             store.products = await Product.find(match)
             .select('title description discount price currency images options category extraText extraImage')
@@ -297,7 +297,7 @@ exports.getOrders = (req, res, next) => {
 exports.getOwnProducts = (req, res, next) => {
     const store = req.body.store;
     const criteria = req.params.search || '';
-    Product.find({store: store._id,isDeleted:false, $or: [
+    Product.find({store: store._id, isDeleted:false, isStoreDeleted: false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
         },
@@ -325,7 +325,7 @@ exports.getPopularProducts = (req, res, next) => {
         })
         let keys = Object.keys(arr);
         keys = keys.slice(0, 4);
-        Product.find({_id: {$in: keys}, isDeleted:false})
+        Product.find({_id: {$in: keys}, isDeleted: false, isStoreDeleted: false})
         .populate('dealOfTheDay')
         .select('title images')
         .then(products => {

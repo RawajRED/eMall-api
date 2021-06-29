@@ -237,7 +237,7 @@ exports.removeFeaturedProduct = (req, res, next) => {
 
 exports.searchProducts = (req, res, next) => {
     const criteria = req.body.search || '';
-    Product.find({$or: [
+    Product.find({isStoreDeleted: false, isDeleted: false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
         },

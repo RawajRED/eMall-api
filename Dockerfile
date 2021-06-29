@@ -1,6 +1,6 @@
 FROM node:16
 
-WORKDIR /home/salem/eMall-api
+WORKDIR home/ubuntu/eMall-api
 
 COPY package*.json ./
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 80
 
-CMD [ "nodemon", "./bin/www" ]
+CMD [ "node", "./bin/www" ]

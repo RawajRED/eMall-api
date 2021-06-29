@@ -34,7 +34,7 @@ exports.createProductsBulk = (req, res, next) => {
 
 
 exports.getProductById = (req, res, next) => {
-    Product.findOne({_id: req.params.id , isDeleted : false})
+    Product.findOne({_id: req.params.id})
     .populate({
         path: 'store',
         select: 'logo title categories'
@@ -228,7 +228,7 @@ exports.updateProductOptionsAddParam = async (req, res, next) => {
 
 exports.deleteProduct = (req, res, next) => {
 
-    Product.findOneAndUpdate(req.body, {isDeleted:true},{new:true})
+    Product.findOneAndUpdate(req.body, {isDeleted: true}, {new:true})
     .then(resp => res.json(resp))
     .catch(err => next({status: 500, message: 'Internal Server Error'}))
 }

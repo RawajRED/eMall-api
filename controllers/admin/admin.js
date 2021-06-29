@@ -96,7 +96,7 @@ exports.getStoreData = (req, res, next) => {
 exports.deleteStore = (req, res, next) => {
     Promise.all([
         Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: true}),
-        Product.findOneAndUpdate({store: req.params.id}, {isDeleted: true})
+        Product.findOneAndUpdate({store: req.params.id}, {isStoreDeleted: true})
     ])
     .then(() => res.sendStatus(200))
     .catch(err => next(err));

@@ -72,7 +72,8 @@ const storeOrderSchema = new Schema({
         extra: String,
     },
     deliveryTime: Date,
-    refund: Boolean
+    refund: Boolean,
+    amount: Number
 }, {timestamps: { createdAt: 'created_at'}});
 
 const storeOrderModel = mongoose.model('StoreOrder', storeOrderSchema);

@@ -187,10 +187,8 @@ exports.getRefunds = (req, res, next) => {
         path: 'client',
         select: 'firstName lastName email phone'
     })
-    .populate({
-        path: 'order'
-    })
-    .populate('storeOrders.storeOrder')
+    .populate({path: 'order', populate: 'address '})
+    .populate({path: 'storeOrders.storeOrder', populate: 'orders.product'})
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }

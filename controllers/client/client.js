@@ -525,7 +525,7 @@ exports.placeOrder = (req, res, next) => {
                 if(obj.hasOwnProperty(product.product.store)){
                     obj[product.product.store].push({...product._doc, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null});
                 }
-                else obj[product.product.store] = [{...product._doc, image: product.image, text: product.text, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null}];
+                else obj[product.product.store] = [{...product._doc, image: product.image, amount: product.price, text: product.text, discount: product.product.discount, dealOfTheDay: discount ? discount.discount : null}];
             });
             let arr = [];
             for (let store in obj) {

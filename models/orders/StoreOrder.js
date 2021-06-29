@@ -41,7 +41,8 @@ const storeOrderSchema = new Schema({
         discount: Number,
         dealOfTheDay: Number,
         image: String,
-        text: String
+        text: String,
+        amount: Number
     }],
     client: {
         type: Schema.Types.ObjectId,
@@ -72,8 +73,7 @@ const storeOrderSchema = new Schema({
         extra: String,
     },
     deliveryTime: Date,
-    refund: Boolean,
-    amount: Number
+    refund: Boolean
 }, {timestamps: { createdAt: 'created_at'}});
 
 const storeOrderModel = mongoose.model('StoreOrder', storeOrderSchema);

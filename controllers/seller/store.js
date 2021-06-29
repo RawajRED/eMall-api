@@ -91,7 +91,7 @@ exports.getStoreProductsByCategory = (req, res, next) => {
     Store.find({categories: req.body.category,isDeleted:false})
     .select('title description categories logo reviews')
     .sort('title')
-    .limit(10)
+    .limit(4)
     .populate('categories')
     .populate({
         path: 'reviews',
@@ -116,7 +116,7 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 }
 
 exports.getStoreProductsByCategoryFull = (req, res, next) => {
-    Store.find({categories: req.body.category, isDeleted:false,products: { $not: {$size: 0}}})
+    Store.find({categories: req.body.category, isDeleted:false})
     .select('title description categories products logo reviews')
     .sort('title')
     .populate({
@@ -139,10 +139,10 @@ exports.getStoreProductsByCategoryFull = (req, res, next) => {
 exports.getStoreProductsBySubcategory = (req, res, next) => {
     const subcategory = req.body.subcategory;
     const category = subcategory.category;
-    Store.find({categories: category,isDeleted:false,products: { $not: {$size: 0}}})
+    Store.find({categories: category,isDeleted:false})
     .select('title description categories logo reviews')
     .sort('title')
-    .limit(10)
+    .limit(4)
     .populate('categories')
     .populate({
         path: 'reviews',

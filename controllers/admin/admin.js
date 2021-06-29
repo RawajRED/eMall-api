@@ -105,7 +105,7 @@ exports.deleteStore = (req, res, next) => {
 exports.revertStore = (req, res, next) => {
     Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: false}, {new: true})
     .then(resp => {
-        Product.updateMany({_id: req.params.id}, {isStoreDeleted: false});
+        Product.updateMany({store: req.params.id}, {isStoreDeleted: false});
         Seller.find({store: req.params.id})
         .select('name title email')
         .then(sellers => {
@@ -193,9 +193,26 @@ exports.getRefunds = (req, res, next) => {
     .catch(err => next(err));
 }
 
-exports.updateRefund = (req, res, next) => {
-    RefundRequest.findOneAndUpdate({_id: req.body.id}, {status: req.body.status}, {new: true})
+exports.confirmRefund = (req, res, next) => {
+    RefundRequest.findOneAndUpdate({_id: req.body.id}, {status: 1}, {new: true})
     .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.completeRefund = (req, res, next) => {
+    RefundRequest.findOneAndUpdate({_id: req.body.id}, {status: 2}, {new: true})
+    .populate({
+        path: 'client',
+        select: 'firstName lastName email phone'
+    })
+    .populate({path: 'order', populate: 'address '})
+    .populate({path: 'storeOrders.storeOrder', populate: 'orders.product'})
+    .then(resp => {
+        Promise.all([
+            ClientPayment()
+        ])
+        res.json(resp)
+    })
     .catch(err => next(err));
 }
 

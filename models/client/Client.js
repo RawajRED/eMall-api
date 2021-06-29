@@ -107,16 +107,12 @@ const clientSchema = new Schema({
 });
 
 clientSchema.pre('save', function(next){
-    console.log(`---------------------------POST SAVE--------------------------`);
-    console.log('doc is', this);
     Cart.create({client: this._id})
     .then(resp => resp.toJSON())
     .then((cart) => {
-        console.log(`Created a cart!`, cart)
         Wishlist.create({client: this._id})
         .then(resp => resp.toJSON())
         .then(wishlist => {
-            console.log(`Created a wishlist!`, wishlist)
             this.cart = cart._id;
             this.wishlist = wishlist._id;
             next();

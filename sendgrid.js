@@ -12,9 +12,6 @@ exports.sendMail = async ({mail, subject, text, html}) => {
 
     sgMail
       .send(msg)
-      .then(() => {
-        console.log('Email sent')
-      })
       .catch((error) => {
         console.error(error)
       })    

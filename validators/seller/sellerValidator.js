@@ -33,7 +33,6 @@ exports.validateSellerRegister = [
         .isEmail().withMessage('Please provide a valid email address').bail()
         .normalizeEmail({gmail_remove_dots: false})
         .custom(value => {
-            console.log('testing email on ' + value)
             return Seller.findOne({email: value}).then(seller => {
                 if (seller)
                     return Promise.reject('Email already in use')
@@ -82,7 +81,6 @@ exports.validateSeller = [
         .isEmail().withMessage('Please provide a valid email address').bail()
         .normalizeEmail({gmail_remove_dots: false})
         .custom(value => {
-            console.log('testing email on ' + value)
             return Seller.findOne({email: value}).then(seller => {
                 if (seller)
                     return Promise.reject('Email already in use')
@@ -113,7 +111,6 @@ exports.validateSeller = [
 ]
 
 exports.authenticateSeller = (req, res, next) => {
-    console.log('verifying seller')
     const token = req.get('token');
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
         if(err)

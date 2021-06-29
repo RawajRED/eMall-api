@@ -38,10 +38,7 @@ productReviewSchema.pre('save', function(next){
 
 productReviewSchema.post('save', doc => {
     Product.updateOne({_id: doc.product}, {$push: {reviews: doc._id}})
-    .then(resp => {
-        console.log('success!', resp);
-    })
-    .catch(err => console.log('ERR!!!!', err));
+    .catch(err => console.log('Error when creating a product review', err));
 })
 
 const productReviewModel = mongoose.model('ProductReview', productReviewSchema);

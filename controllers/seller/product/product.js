@@ -62,7 +62,7 @@ exports.findByCategory = (req, res ,next) => {
     if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
-    .limit(40)
+    .limit(20)
     .populate('dealOfTheDay')
     .then(products => res.json(products))
     .catch(err => next(err)); 
@@ -94,7 +94,7 @@ exports.findBySubcategory = (req, res, next) => {
         match.filter = req.body.filter;
     Product.find(match)
     .populate('dealOfTheDay')
-    .limit(40)
+    .limit(20)
     .then(products => res.json(products))
     .catch(err => next(err)); 
 }

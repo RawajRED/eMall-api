@@ -27,7 +27,7 @@ router.post('/orders/fulfill', adminValidators.adminIsLoggedIn, admin.fulfillPay
 router.delete('/orders/wipe', adminValidators.adminIsLoggedIn, admin.wipeOrders);
 
 router.get('/refunds/:status', adminValidators.adminIsLoggedIn, admin.getRefunds);
-router.put('/refunds', adminValidators.adminIsLoggedIn, admin.updateRefund);
+router.put('/refunds/confirm', adminValidators.adminIsLoggedIn, admin.confirmRefund);
 
 router.post('/variables', admin.changeVariables);
 

@@ -96,7 +96,7 @@ exports.getStoreData = (req, res, next) => {
 exports.deleteStore = (req, res, next) => {
     Promise.all([
         Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: true}),
-        Product.findOneAndUpdate({store: req.params.id}, {isStoreDeleted: true})
+        Product.updateMany({store: req.params.id}, {isStoreDeleted: true})
     ])
     .then(() => res.sendStatus(200))
     .catch(err => next(err));
@@ -105,6 +105,7 @@ exports.deleteStore = (req, res, next) => {
 exports.revertStore = (req, res, next) => {
     Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: false}, {new: true})
     .then(resp => {
+        Product.updateMany({_id: req.params.id}, {isStoreDeleted: false});
         Seller.find({store: req.params.id})
         .select('name title email')
         .then(sellers => {

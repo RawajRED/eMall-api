@@ -34,6 +34,9 @@ router.put('/profile', clientValidators.clientIsLoggedIn, client.updateProfile);
 // ? PAYMENTS
 router.get('/payments', clientValidators.clientIsLoggedIn, client.getPayments);
 
+// ? REFUNDS
+router.post('/refund', clientValidators.clientIsLoggedIn, client.requestRefund);
+
 // ? CLIENT GENERAL
 router.post('/register', clientValidators.validateClientRegisterEmail, client.clientRegisterEmail); //tested
 router.post('/login', clientValidators.validateClientLoginEmail, client.clientLoginEmail); //tested

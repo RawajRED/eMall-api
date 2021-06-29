@@ -13,7 +13,6 @@ exports.getProductVariant = (req, res, next) => {
 }
 
 exports.getVariant = (req, res, next) => {
-    console.log('getting vars')
     Product.findOne({_id: req.params.id,isDeleted : false})
     .then(prod => {
         ProductVariant.findOne({_id: prod.variants})
@@ -50,17 +49,13 @@ exports.updateProductVariant = async (req, res, next) => {
     const newVariant = {en: req.body.variant.en, ar: req.body.variant.ar};
     const newProduct = req.body.product;
     const variants = await ProductVariant.findOne({_id: req.body._id});
-    console.log(variantId, newVariant, newProduct);
-    console.log(variants);
     variants.products = variants.products.map(product => {
-        console.log('product rn is ', product)
         if(product._id.toString() === variantId){
             product.product = newProduct;
             product.variant = newVariant;
         }
         return product;
     });
-    console.log(variants);
     variants.save();
     ProductVariant.updateOne({_id: variants._id}, variants)
     .then(resp => res.json({resp}))
@@ -89,7 +84,6 @@ exports.removeProductVariant = async (req, res, next) => {
             return product;
         else Product.findOneAndUpdate({_id: product.product}, {$unset: {variants: 1}});
     });
-    console.log(variants, variants.products.length);
     if(variants.products.length > 0){
         variants.save();
         ProductVariant.updateOne({_id: variants._id}, variants)
@@ -103,15 +97,14 @@ exports.removeProductVariant = async (req, res, next) => {
 }
 
 exports.sms = (req, res, next) => {
-    console.log(accountSid, authToken);
     client.messages
-  .create({
-     body: 'Your verification code is AFDQL',
-     from: '+12255290371',
-     to: '+201140008042'
-   })
-  .then(message => console.log(message  ))
-  .catch(err => next(err));
+    .create({
+        body: 'Your verification code is AFDQL',
+        from: '+12255290371',
+        to: '+201140008042'
+    })
+    .then(message => console.log(message))
+    .catch(err => next(err));
 }
 
 exports.getProductVariants = (req, res, next) => {

@@ -6,6 +6,7 @@ const ProductReview = require('../../models/seller/product/ProductReview');
 const StoreReview = require('../../models/seller/StoreReview');
 const Order = require('../../models/orders/Order');
 const StoreOrder = require('../../models/orders/StoreOrder');
+const RefundRequest = require('../../models/orders/RefundRequest');
 const DealOfTheDay = require('../../models/other/DealOfTheDay');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -13,7 +14,6 @@ const sendMail = require('../../sendgrid').sendMail;
 const { getVariables } = require('../../variables');
 
 exports.clientRegisterEmail = (req, res, next) => {
-    console.log(req.body);
     const password = req.body.password;
     const saltRounds = 10;
     bcrypt.hash(password, saltRounds, (err, hash) => {
@@ -117,7 +117,6 @@ exports.clientLoginEmail = (req, res, next) => {
                 if(result){
                     if(client.verified){
                         const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
-                        console.log({client, token, type: 'client'})
                         return res.json({client, token, type: 'client'})
                     }
                     else {
@@ -156,7 +155,6 @@ exports.clientLoginToken = (req, res, next) => {
     })
     .populate('cart')
     .then(client => {
-        console.log(client)
         const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
         return res.json({client, token, type: 'client'})
     })
@@ -164,7 +162,6 @@ exports.clientLoginToken = (req, res, next) => {
 }
 
 exports.clientVerifyOtp = (req, res, next) => {
-    console.log(req.body);
     Client.findOneAndUpdate({email: req.body.email, otp: req.body.otp.toUpperCase()}, {verified: true}, {$unset: {otp: 1}, new: true})
     .populate({
         path: 'wishlist',
@@ -190,7 +187,6 @@ exports.clientForgotPassword = (req, res, next) => {
     const otp = generateOtp(4);
     Client.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
     .then(client => {
-        console.log(client);
         sendMail({
             mail: client.email,
             subject: 'Forget Password',
@@ -233,7 +229,6 @@ exports.clientCheckOtp = (req, res, next) => {
 }
 
 exports.clientUpdateInfo = (req, res, next) => {
-    console.log('req.body is', req.body)
     Client.findOneAndUpdate({_id: req.body.client}, req.body, {new: true})
     .then(resp => {resp ? res.json(resp) : next({status: 404, message: `Couldn't find client`})})
     .catch(err => next({status: 400, message: err}))
@@ -401,10 +396,8 @@ exports.removeFromCart = (req, res, next) => {
     const client = req.body.client;
     const product = req.body.product;
     const code = product.code
-    console.log(product, code)
     Cart.findOne({client})
     .then(async cart => {
-        console.log('the current cart products are', cart.products, 'with code', code, 'and filter', cart.products.filter(product => product.code !== code))
         cart.products = cart.products.filter(product => product.code !== code);
         await cart.save();
         res.json(cart);
@@ -537,7 +530,6 @@ exports.placeOrder = (req, res, next) => {
             let arr = [];
             for (let store in obj) {
                 let orders = obj[store];
-                console.log('orders are, ', orders);
                 arr.push({store, orders, code, client, address});
             }
 
@@ -668,6 +660,22 @@ exports.getPayments = (req, res, next) => {
     .then(resp => {
         res.json(resp);
     })
+    .catch(err => next(err));
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   REFUND                                   */
+/* -------------------------------------------------------------------------- */
+
+exports.requestRefund = (req, res, next) => {
+    RefundRequest.findOneAndUpdate({client: req.body.client}, {
+        status: 0,
+        storeOrders: req.body.storeOrders,
+        code: req.body.code,
+        client: req.body.client,
+        order: req.body.order
+    }, {upsert: true, new: true})
+    .then(resp => res.json(resp))
     .catch(err => next(err));
 }
 

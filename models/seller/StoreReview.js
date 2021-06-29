@@ -38,10 +38,7 @@ storeReviewSchema.pre('save', function(next){
 
 storeReviewSchema.post('save', doc => {
     Store.updateOne({_id: doc.store}, {$push: {reviews: doc._id}})
-    .then(resp => {
-        console.log('success!', resp);
-    })
-    .catch(err => console.log('ERR!!!!', err));
+    .catch(err => console.log('Error when creating a store review', err));
 })
 
 const storeReviewModel = mongoose.model('StoreReview', storeReviewSchema);

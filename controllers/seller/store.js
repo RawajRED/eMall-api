@@ -21,7 +21,7 @@ cron.schedule('59 23 * * *', () => {
         .then(payments => {
             const promises = [];
             payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
-            Promise.all(promises).then(() => console.log('Updated Store Payments')).catch(err => console.log(err));
+            Promise.all(promises).catch(err => console.log(err));
         })
 });
 
@@ -39,7 +39,6 @@ exports.getStore = (req, res, next) => {
     .then(resp => {
         StorePage.findOne({store: req.params.id})
         .then(page => {
-            console.log('the resp is', resp)
             res.json({...resp._doc, page})
         })
     })
@@ -47,7 +46,6 @@ exports.getStore = (req, res, next) => {
 }
 
 exports.getStorePage = (req, res, next) => {
-    console.log(req.params)
     StorePage.findOne({store: req.params.id})
     .populate('homeAds.product')
     .then(resp => res.json(resp))
@@ -55,7 +53,6 @@ exports.getStorePage = (req, res, next) => {
 }
 
 exports.uploadPageImage = (req, res, next) => {
-    console.log('file', req.file, req.body);
     res.json({ayy: 'lmao'})
 }
 
@@ -91,7 +88,6 @@ exports.updateStore = (req, res, next) => {
 // }
 
 exports.getStoreProductsByCategory = (req, res, next) => {
-    console.log('BODY', req.body)
     Store.find({categories: req.body.category,isDeleted:false})
     .select('title description categories logo reviews')
     .sort('title')
@@ -111,7 +107,6 @@ exports.getStoreProductsByCategory = (req, res, next) => {
             .exec();
             return store;
         })
-        // console.log('_stores are', _stores)
         Promise.all(_stores).then(resp => {
             res.json(resp)
         });
@@ -121,7 +116,6 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 }
 
 exports.getStoreProductsByCategoryFull = (req, res, next) => {
-    console.log('skipping by ', req.body.skip)
     Store.find({categories: req.body.category, isDeleted:false,products: { $not: {$size: 0}}})
     .select('title description categories products logo reviews')
     .sort('title')
@@ -155,7 +149,6 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
         select: 'stars'
     })
     .then(async stores => {
-        console.log('looking for filter', req.body.filter);
         const _stores = stores.map(async store => {
             const match = {store, subcategory,isDeleted:false}
             if(req.body.filter) match.filter =  req.body.filter;
@@ -167,11 +160,9 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
             .exec();
             return store;
         })
-        // console.log('_stores are', _stores)
         Promise.all(_stores).then(resp => {
             res.json(resp)
         });
-        // await res.json(_stores)
     })
     .catch(err => next({status: 404, message: err}));
 }
@@ -182,7 +173,6 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     const match = {isDeleted:false,subcategory: req.body.subcategory._id, stock: {$gt: 0}};
     if(req.body.filter !== '')
         match.filter = req.body.filter;
-    console.log(match)
     Store.find({categories: category,isDeleted:false, products: { $not: {$size: 0}}})
     .select('title description categories products logo')
     .populate({
@@ -209,7 +199,6 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
             .exec();
             return store;
         })
-        // console.log('_stores are', _stores)
         Promise.all(_stores).then(resp => {
             res.json(resp)
         });
@@ -247,17 +236,14 @@ exports.createStorePage = (req, res, next) => {
 }
 
 exports.updateStorePage = (req, res, next) => {
-    console.log(req.body);
     StorePage.findOneAndUpdate({store: req.body.store._id}, {
         coverImage: req.body.coverImage,
         $set: {homeAds: req.body.homeAds},
          }, {new: true, populate: 'homeAds.product'})
     .then(resp => {
-        console.log('well, resp is', resp)
         res.json(resp)
     })
     .catch(err => {
-        console.log('your err sir. is', err)
         next(err)
     });
 }
@@ -267,7 +253,6 @@ exports.updateStorePage = (req, res, next) => {
 /* -------------------------------------------------------------------------- */
 
 exports.addView = (req, res, next) => {
-    console.log('adding view foooor', req.body);
     const date = new Date();
     StoreView.findOne({
         store: req.body.store, 
@@ -281,8 +266,7 @@ exports.addView = (req, res, next) => {
         if(resp) return res.json({ok: true})
         else {
             StoreView.create({store: req.body.store, client: req.body.client})
-            .then(resp => resp.toJSON())
-            .then(resp => console.log('added new view!', resp));
+            .then(resp => resp.toJSON());
         }
     })
         
@@ -290,7 +274,6 @@ exports.addView = (req, res, next) => {
 
 exports.getViews = (req, res, next) => {
     const date = new Date();
-    console.log(date.getFullYear(), date.getMonth() + 1, 31)
     StoreView.countDocuments({store: req.body.store,
         created_at: {
             $gte: new Date(date.getFullYear(), date.getMonth() - 1, 31),
@@ -314,7 +297,6 @@ exports.getOrders = (req, res, next) => {
 exports.getOwnProducts = (req, res, next) => {
     const store = req.body.store;
     const criteria = req.params.search || '';
-    console.log('store', store, 'criteria', criteria)
     Product.find({store: store._id,isDeleted:false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}

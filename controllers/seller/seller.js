@@ -134,7 +134,6 @@ exports.sellerSignInFacebook = (req, res, next) => {
                     const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
                     const store = seller.store;
                     delete seller.store;
-                    console.log({store, seller, token})
                     return res.json({store, seller, token});
                 } else return next({status: 404, msg: `No Store registered on this Facebook account`});
             })
@@ -146,7 +145,6 @@ exports.sellerForgotPassword = (req, res, next) => {
     const otp = createId(4);
     Seller.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
     .then(seller => {
-        console.log(seller)
         res.json({confirm: true})
     })
     .catch(err => next(err));

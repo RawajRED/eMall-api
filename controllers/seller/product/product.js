@@ -70,7 +70,6 @@ exports.findByCategory = (req, res ,next) => {
 
 exports.findByCategoryFull = (req, res ,next) => {
     const category = req.body.id;
-    console.log('skipping by ', req.body.skip)
     const match = {category,isDeleted:false, $or: [
         {
             "title.en": {$regex: req.body.search, $options: "i"}
@@ -133,7 +132,6 @@ exports.getMoreFromSeller = (req, res, next) => {
 }
 
 exports.getDeals = (req, res, next) => {
-    console.log('getting deals')
     Product.find({ isDeleted:false,discount: {$gt: 0}}).sort({updated_at: 1})
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))
@@ -185,7 +183,6 @@ exports.findProduct = (req, res, next) => {
 }
 
 exports.updateProduct = (req, res, next) => {
-    console.log(' o hi maerk')
     Product.findOneAndUpdate({_id: req.body.product._id, isDeleted:false}, req.body.product, {new: true})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: "Couldn't find the specificed Product"}))
     .catch(err => next(err));
@@ -198,16 +195,13 @@ exports.updateProductOptions = (req, res, next) => {
 }
 
 exports.addProductOptionsAddParam = (req, res, next) => {
-    console.log('id', req.body.optionId, 'options', req.body.option)
     Product.findOneAndUpdate({'options._id': req.body.optionId , isDeleted:false}, {$push: {'options.$[element].options': req.body.option}}, {new: true, arrayFilters: [{'element._id': req.body.optionId}]})
     .then(resp => resp ? res.json(resp) : next({status: 404, message: "Couldn't find the specificed Product"}))
     .catch(err => next(err));
 }
 
 exports.updateProductOptionsAddParam = async (req, res, next) => {
-    // console.log('id', req.body.optionId, 'innerOption', req.body.innerOptionId, 'options', req.body.option)
     const product = await Product.findOne({_id: req.body.productId , isDeleted:false});
-    // console.log(product.options)
     product.options = product.options.map(option => {
         if(option._id.toString() === req.body.optionId){
             option.options.map(option => {
@@ -216,7 +210,6 @@ exports.updateProductOptionsAddParam = async (req, res, next) => {
                     option.title.ar = req.body.option.title.ar;
                     option.stock = req.body.option.stock;
                     option.extraPrice = req.body.option.extraPrice;
-                    console.log(option)
                 }
                 return option;
             })

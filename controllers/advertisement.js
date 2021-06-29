@@ -30,7 +30,7 @@ cron.schedule('59 23 * * *', () => {
                     promises.push(BannerAd.deleteOne(ad).exec());
                 }
             }, [])
-        Promise.all(promises).then(res => console.log('Updated Banner')).catch(err => console.log(err));
+        Promise.all(promises).catch(err => console.log(err));
     })
     
     //! Delete active Deals of the Day and activate the new ones
@@ -126,10 +126,8 @@ exports.updateHighestBidder = (req, res, next) => {
             .catch(err => next(err));
         }
         else if(newAd.bid >= currAd.bid + getVariables().homeAd){
-            Store.findOneAndUpdate({_id: currAd.store}, {$inc: {credit: currAd.bid}}, {new: true})
-            .then(resp => console.log(`Updated old credit (${resp.title})`, resp.credit));
+            Store.findOneAndUpdate({_id: currAd.store}, {$inc: {credit: currAd.bid}}, {new: true});
             Store.findOneAndUpdate({_id: newAd.store}, {$inc: {credit: newAd.bid * -1}})
-            .then(resp => console.log(`Updated new credit (${resp.title})`, resp.credit));
             HomeAd.findOneAndUpdate({active: false, page: req.body.page}, req.body, {new: true})
             .populate({
                 path: 'store',
@@ -198,10 +196,8 @@ exports.updateBannerAd = (req, res, next) => {
     const store = req.body.store;
     const bannerAd = req.body.bannerAd;
 
-    console.log('updating banner ad', bannerAd)
     BannerAd.findOneAndUpdate({_id: bannerAd._id, store: store._id}, bannerAd, {new: true})
     .then(resp => {
-        console.log(resp);
         res.json(resp)
     })
     .catch(err => next(err));

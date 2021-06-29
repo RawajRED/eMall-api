@@ -7,6 +7,7 @@ const StoreOrder = require('../../models/orders/StoreOrder');
 const ClientPayment = require('../../models/client/ClientPayment');
 const StorePayment = require('../../models/seller/StorePayment');
 const Product = require('../../models/seller/product/Product');
+const RefundRequest = require('../../models/orders/RefundRequest');
 const Variables = require('../../models/other/Variables');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -57,14 +58,12 @@ exports.getDeletedStores = (req, res, next) => {
 }
 
 exports.approveStore = (req, res, next) => {
-    console.log('shit coming', req.body)
     Store.findOneAndUpdate({_id: req.body.id}, {approved: true}, {new: true})
     .populate('categories')
     .then(resp => {
         Seller.find({store: req.body.id})
         .select('name title email')
         .then(sellers => {
-            console.log(resp, sellers);
             res.json({...resp._doc, sellers})
         })
     })
@@ -75,7 +74,6 @@ exports.getAllStores = (req, res, next) => {
     Store.find({...req.body.ciretia, approved: true, isDeleted: false})
     .populate('categories')
     .then(resp => {
-        console.log(resp, req.body.criteria)
         res.json(resp);
     })
     .catch(err => next(err))
@@ -96,13 +94,15 @@ exports.getStoreData = (req, res, next) => {
 }
 
 exports.deleteStore = (req, res, next) => {
-    Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: true})
+    Promise.all([
+        Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: true}),
+        Product.findOneAndUpdate({store: req.params.id}, {isDeleted: true})
+    ])
     .then(() => res.sendStatus(200))
     .catch(err => next(err));
 }
 
 exports.revertStore = (req, res, next) => {
-    console.log('reverting ', req.params.id)
     Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: false}, {new: true})
     .then(resp => {
         Seller.find({store: req.params.id})
@@ -126,7 +126,6 @@ exports.getReadyOrders = (req, res, next) => {
 }
 
 exports.changeOrderStatus = (req, res, next) => {
-    console.log('changing status', req.body)
     Order
         .findOneAndUpdate({_id: req.body.id}, {status: req.body.status}, {new: true})
         .then(resp => res.json(resp))
@@ -134,7 +133,6 @@ exports.changeOrderStatus = (req, res, next) => {
 }
 
 exports.fulfillPayment = async (req, res, next) => {
-    console.log('fulfilling order')
     const order = await Order.findOne({_id: req.body.id}).populate({path: 'storeOrders', populate: 'orders.product'});
     order.status = 5;
     await order.save();
@@ -165,7 +163,6 @@ exports.fulfillPayment = async (req, res, next) => {
 
         Promise.all(payments)
         .then(resp => {
-            console.log(resp);
             res.json({msg: 'Task completed!', resp})
         })
     })
@@ -179,13 +176,36 @@ exports.wipeOrders = (req, res, next) => {
     })
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                   REFUNDS                                  */
+/* -------------------------------------------------------------------------- */
+
+exports.getRefunds = (req, res, next) => {
+    RefundRequest.find({status: req.params.status})
+    .populate({
+        path: 'client',
+        select: 'firstName lastName email phone'
+    })
+    .populate({
+        path: 'order'
+    })
+    .populate('storeOrders.storeOrder')
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.updateRefund = (req, res, next) => {
+    RefundRequest.findOneAndUpdate({_id: req.body.id}, {status: req.body.status}, {new: true})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
 // * Variables
 
 exports.changeVariables = (req, res, next) => {
     Variables.findOneAndUpdate({}, req.body, {upsert: true, new: true})
     .then(resp => {
         changeVariables(resp);
-        console.log('new vars', getVariables(), 'from resp', resp)
         res.json(resp);
     })
     .catch(err => next(err));
@@ -210,7 +230,6 @@ exports.addFeaturedProducts = (req, res ,next) => {
 }
 
 exports.removeFeaturedProduct = (req, res, next) => {
-    console.log('deleting', req.query.id)
     FeaturedProduct.findOneAndDelete({_id: req.query.id})
     .then(resp => res.json(resp))
     .catch(err => next(err));

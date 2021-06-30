@@ -95,6 +95,22 @@ exports.getStoreData = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.addPendingCredit = (req, res, next) => {
+    StorePayment
+    .find({store : req.params.id, fullfilled : false})
+    .then(payments => {
+        const promises = [];
+        payments.forEach(payment => 
+            {
+                promises.push(Store.findOneAndUpdate({_id: req.params.id}, {$inc: {credit: payment.amount}}).exec());
+                promises.push(StorePayment.findOneAndUpdate({_id: payment._id}, {$set: {fullfilled: true}}).exec());
+            });
+        Promise.all(promises)
+        .then(resp => res.status(200).json({message:"pending funds added successfully !!"}))
+        .catch(err => console.log(err));
+    })
+}
+
 exports.deleteStore = (req, res, next) => {
     Promise.all([
         Store.findOneAndUpdate({_id: req.params.id}, {isDeleted: true}),

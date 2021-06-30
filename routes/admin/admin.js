@@ -11,6 +11,7 @@ router.post('/stores', adminValidators.adminIsLoggedIn, admin.getAllStores);
 router.post('/stores/applying', adminValidators.adminIsLoggedIn, admin.getApplyingStores);
 router.post('/stores/deleted', adminValidators.adminIsLoggedIn, admin.getDeletedStores);
 router.post('/stores/approve', adminValidators.adminIsLoggedIn, admin.approveStore);
+router.get('/stores/credit/:id', adminValidators.adminIsLoggedIn, admin.addPendingCredit);
 router.get('/stores/:id', adminValidators.adminIsLoggedIn, admin.getStoreData);
 router.delete('/stores/:id', adminValidators.adminIsLoggedIn, admin.deleteStore);
 router.put('/stores/revert/:id', adminValidators.adminIsLoggedIn, admin.revertStore);
@@ -35,7 +36,6 @@ router.get('/refresh', adminValidators.refreshToken);
 router.post('/', adminValidators.adminIsLoggedIn, admin.createNewAdmin);
 router.get('/', adminValidators.adminVerifyToken);
 
-//router.get('/finance', adminValidators.adminIsLoggedIn, admin.getFinanceOverview);
 
 
 module.exports = router;

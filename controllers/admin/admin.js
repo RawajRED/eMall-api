@@ -295,8 +295,96 @@ exports.createNewAdmin = (req, res, next) => {
 }
 
 
-// exports.getFinanceOverview = (req, res, next) => {
+
+// Finance Info 
 
 
+exports.getPendingFunds = (req, res, next) => {
 
-// }
+    StorePayment
+    .find({fullfilled : false, created_at: {
+                            $gte: new Date(new Date()- req.body.days * 24 * 60 * 60 * 1000),
+                        } })
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                funds += payment.amount ;
+            });
+        res.status(200).json({"Pending funds": funds});
+    })
+}
+
+exports.getPendingFundsFull = (req, res, next) => {
+
+    StorePayment
+    .find({fullfilled : false })
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                funds += payment.amount ;
+            });
+        res.status(200).json({"Pending funds": funds});
+    })
+}
+
+exports.getPaidFunds = (req, res, next) => {
+
+    StorePayment
+    .find({fullfilled : true, created_at: {
+                            $gte: new Date(new Date()- req.body.days * 24 * 60 * 60 * 1000),
+                        } })
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                funds += payment.amount ;
+            });
+        res.status(200).json({"Paid funds": funds});
+    })
+}
+
+exports.getPaidFundsFull = (req, res, next) => {
+
+    StorePayment
+    .find({fullfilled : true })
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                funds += payment.amount ;
+            });
+        res.status(200).json({"Paid funds": funds});
+    })
+}
+
+exports.getFunds = (req, res, next) => {
+
+    StorePayment
+    .find({created_at: {
+                            $gte: new Date(new Date()- req.body.days * 24 * 60 * 60 * 1000),
+                        } })
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                funds += payment.amount ;
+            });
+        res.status(200).json({"total funds": funds});
+    })
+}
+
+exports.getFundsFull = (req, res, next) => {
+
+    StorePayment
+    .find({})
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                funds += payment.amount ;
+            });
+        res.status(200).json({"total funds": funds});
+    })
+}

@@ -122,8 +122,8 @@ exports.revertStore = (req, res, next) => {
 exports.getReadyOrders = (req, res, next) => {
     Order
         .find({status: req.params.status})
-        .populate({path: 'storeOrders', populate: [{path: 'orders.product', select: 'title price'}, {path: 'store', select: 'title logo'}]})
-        .populate({path: 'client', select: 'firstName lastName'})
+        .populate({path: 'storeOrders', populate: [{path: 'orders.product' ,select : 'title description reviews images category discount stock price options'}, {path: 'store', select : 'title logo reviews sellers'}]})
+        .populate({path: 'client', select :'firstName lastName email phone'})
         .then(resp => res.json(resp))
         .catch(err => next(err));
 }

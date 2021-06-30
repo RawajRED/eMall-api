@@ -58,7 +58,9 @@ exports.getDeletedStores = (req, res, next) => {
 }
 
 exports.approveStore = (req, res, next) => {
-    Store.findOneAndUpdate({_id: req.body.id}, {approved: true}, {new: true})
+    
+    var numOfDays = (req.body.numOfDays) ? req.body.numOfDays : 14 ;
+    Store.findOneAndUpdate({_id: req.body.id}, {approved: true, daysTillPaid :numOfDays}, {new: true})
     .populate('categories')
     .then(resp => {
         Seller.find({store: req.body.id})
@@ -275,3 +277,10 @@ exports.createNewAdmin = (req, res, next) => {
     }
     )
 }
+
+
+// exports.getFinanceOverview = (req, res, next) => {
+
+
+
+// }

@@ -35,4 +35,7 @@ router.get('/refresh', adminValidators.refreshToken);
 router.post('/', adminValidators.adminIsLoggedIn, admin.createNewAdmin);
 router.get('/', adminValidators.adminVerifyToken);
 
+//router.get('/finance', adminValidators.adminIsLoggedIn, admin.getFinanceOverview);
+
+
 module.exports = router;

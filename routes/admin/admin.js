@@ -36,12 +36,18 @@ router.get('/refresh', adminValidators.refreshToken);
 router.post('/', adminValidators.adminIsLoggedIn, admin.createNewAdmin);
 router.get('/', adminValidators.adminVerifyToken);
 
+
+// finance
 router.post('/finance/pending',adminValidators.adminIsLoggedIn, admin.getPendingFunds);
 router.get('/finance/pendingFull', adminValidators.adminIsLoggedIn,admin.getPendingFundsFull);
 router.post('/finance/paid',adminValidators.adminIsLoggedIn, admin.getPaidFunds);
 router.get('/finance/paidFull', adminValidators.adminIsLoggedIn,admin.getPaidFundsFull);
 router.post('/finance/funds',adminValidators.adminIsLoggedIn, admin.getFunds);
 router.get('/finance/fundsFull',adminValidators.adminIsLoggedIn, admin.getFundsFull);
+
+router.get('/finance/store/:id',adminValidators.adminIsLoggedIn, admin.getStoreFunds);
+
+
 
 
 module.exports = router;

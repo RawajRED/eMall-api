@@ -388,3 +388,59 @@ exports.getFundsFull = (req, res, next) => {
         res.status(200).json({"total funds": funds});
     })
 }
+
+
+// exports.getStoresFunds = (req, res, next) => {
+//     const stores = [',a'] ;
+//     Store.aggregate([
+//        // {$group : {pending : {@sum:'$amount'}}} ,
+//         {$lookup:{from :"storepayments",localField:"_id",foreignField:"store", /*pipeline: [{ $match:{fullfilled:false } },{$project:{_id:'$store',amount:1,created_at:1}} ] ,*/as:"pending"} }
+//         ,{$match : {approved: true, isDeleted: false}}
+//         ,{$project:{title:1,_id:1,categories:1,credit:1,withdrawalRequests:1,pending:1}}
+//     ])
+//     .populate(result, {path:'categories'})
+//     // .forEach(
+//     //     function(store)
+//     //     {
+//     //         store.funds = 5;//StorePayment.aggregate({store: store._id, fullfilled:false,'Pending':{$sum :'$amount'}}).exec();
+//     //         stores.push(store);
+//     //     });
+//     // res.json(stores);
+
+//     .then(
+//         stores => res.json(stores)
+//     )
+//     // .then(stores => {
+//     //     var funds =0 ;
+//     //     return stores.forEach(store => {
+//     //         funds =0 ;
+//     //         StorePayment.aggregate({store: store._id, fullfilled:false,'Pending':{$sum :'$amount'}})
+//     //     })
+//     // })
+//     .catch(err => next(err))
+
+// }
+
+exports.getStoreFunds = (req, res, next) => {
+
+    let credit =0;
+    let withdrawed=0 ;
+    let pending =0 ;
+    StorePayment
+    .find({store : req.params.id})
+    .populate({path:'store', select :'credit'})
+    .then(payments => {
+        var funds =0 ;
+        payments.forEach(payment => 
+            {
+                credit = payment.store.credit
+                if(payment.fullfilled==false)
+                    pending += payment.amount ;
+                if(payment.fullfilled ==true)
+                    withdrawed += payment.amount ;
+            });
+        if(withdrawed > credit)
+            withdrawed -= credit ;
+        res.status(200).json({"Current credit": credit, "Withdrawed credit":withdrawed, "Pending credit":pending});
+    })
+}

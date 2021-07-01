@@ -19,7 +19,11 @@ const storePaymentSchema = new Schema({
         type: Boolean,
         default: false
     },
-    addedOn: Date
+    addedOn: Date,
+    fullfilled: {
+        type : Boolean,
+        default : false
+    }
 }, {timestamps: { createdAt: 'created_at'}});
 
 const storePaymentModel = mongoose.model('StorePayment', storePaymentSchema);

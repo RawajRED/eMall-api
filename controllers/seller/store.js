@@ -11,16 +11,32 @@ const WithdrawRequest = require('../../models/seller/WithdrawRequest');
 const cron = require('node-cron');
 
 cron.schedule('59 23 * * *', () => {
-    StorePayment
-        .find({
-            created_at: {
-                $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 14),
-                $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 13) 
-            } 
-        })
+    // StorePayment
+    //     .find({
+    //         created_at: {
+    //             $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 14),
+    //             $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 13) 
+    //         } 
+    //     })
+    //     .then(payments => {
+    //         const promises = [];
+    //         payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
+    //         Promise.all(promises).catch(err => console.log(err));
+    //     })
+    console.log('update payments');
+        StorePayment
+        .find({fullfilled:false})
+        .populate({path: 'store', select: 'daysTillPaid'})
         .then(payments => {
             const promises = [];
-            payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
+            payments.forEach(payment => 
+                {
+                    if(payment.created_at <=  new Date(new Date()- payment.store.daysTillPaid * 24 * 60 * 60 * 1000))
+                        {
+                            promises.push(Store.findOneAndUpdate({_id: payment.store.id}, {$inc: {credit: payment.amount}}).exec());
+                            promises.push(StorePayment.findOneAndUpdate({_id: payment._id}, {$set: {fullfilled: true}}).exec());
+                        }
+                });
             Promise.all(promises).catch(err => console.log(err));
         })
 });

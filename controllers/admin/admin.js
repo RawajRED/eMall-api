@@ -460,12 +460,20 @@ exports.fulfillWithdrawal = (req, res, next) => {
     }
     WithdrawRequest
     .findOneAndUpdate({_id:req.body.withdrawalRequest},{fulfilled:true, imageURL: req.body.imageURL, amount : req.body.amount})
+    .populate({path:'store',select:'credit'})
     .then(request => {
+        if(request.store.credit <req.body.amount)
+        {
+            WithdrawRequest
+            .findOneAndUpdate({_id:req.body.withdrawalRequest},{fulfilled:false, imageURL: "", amount : ""})
+            .then(res.status(400).json({message:"transaction amount is larger than store's credit"}));
+        }else {
+            Store.findOneAndUpdate({_id :request.store},{$inc:{credit :-req.body.amount}})
+            .then( store=>
+                res.status(200).json({message:"funds withdrawed successfully!!!"})
+            )
+            .catch(err=> res.json(err))
+        }
 
-        Store.findOneAndUpdate({_id :request.store},{$inc:{credit :-req.body.amount}})
-        .then( store=>
-            res.status(200).json({message:"funds withdrawed successfully!!!"})
-        )
-        .catch(err=> res.json(err))
     })
 }

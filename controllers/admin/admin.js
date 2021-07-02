@@ -7,6 +7,7 @@ const StoreOrder = require('../../models/orders/StoreOrder');
 const ClientPayment = require('../../models/client/ClientPayment');
 const StorePayment = require('../../models/seller/StorePayment');
 const Product = require('../../models/seller/product/Product');
+const WithdrawRequest = require('../../models/seller/WithdrawRequest');
 const RefundRequest = require('../../models/orders/RefundRequest');
 const Variables = require('../../models/other/Variables');
 const jwt = require('jsonwebtoken');
@@ -390,37 +391,6 @@ exports.getFundsFull = (req, res, next) => {
 }
 
 
-// exports.getStoresFunds = (req, res, next) => {
-//     const stores = [',a'] ;
-//     Store.aggregate([
-//        // {$group : {pending : {@sum:'$amount'}}} ,
-//         {$lookup:{from :"storepayments",localField:"_id",foreignField:"store", /*pipeline: [{ $match:{fullfilled:false } },{$project:{_id:'$store',amount:1,created_at:1}} ] ,*/as:"pending"} }
-//         ,{$match : {approved: true, isDeleted: false}}
-//         ,{$project:{title:1,_id:1,categories:1,credit:1,withdrawalRequests:1,pending:1}}
-//     ])
-//     .populate(result, {path:'categories'})
-//     // .forEach(
-//     //     function(store)
-//     //     {
-//     //         store.funds = 5;//StorePayment.aggregate({store: store._id, fullfilled:false,'Pending':{$sum :'$amount'}}).exec();
-//     //         stores.push(store);
-//     //     });
-//     // res.json(stores);
-
-//     .then(
-//         stores => res.json(stores)
-//     )
-//     // .then(stores => {
-//     //     var funds =0 ;
-//     //     return stores.forEach(store => {
-//     //         funds =0 ;
-//     //         StorePayment.aggregate({store: store._id, fullfilled:false,'Pending':{$sum :'$amount'}})
-//     //     })
-//     // })
-//     .catch(err => next(err))
-
-// }
-
 exports.getStoreFunds = (req, res, next) => {
 
     let credit =0;
@@ -439,8 +409,63 @@ exports.getStoreFunds = (req, res, next) => {
                 if(payment.fullfilled ==true)
                     withdrawed += payment.amount ;
             });
-        if(withdrawed > credit)
+        if(withdrawed >= credit)
             withdrawed -= credit ;
         res.status(200).json({"Current credit": credit, "Withdrawed credit":withdrawed, "Pending credit":pending});
+    })
+}
+
+exports.getWithdraws = (req, res, next) => {
+
+    WithdrawRequest
+    .find({fulfilled:false})
+    .populate({path:'store', select :'_id credit performance reviews title logo created_at'})
+    .populate({path:'seller', select :'_id title name phone email'})
+    .then(requests => {
+        const resp = [];
+        requests.forEach(request => 
+            {
+                resp.push(request);
+            });
+
+        res.status(200).json(resp);
+    })
+}
+
+exports.getStoreWithdraws = (req, res, next) => {
+
+    WithdrawRequest
+    .find({store : req.params.id})
+    .populate({path:'seller', select :'_id title name phone email'})
+    .then(requests => {
+        const resp = [];
+        requests.forEach(request => 
+            {
+                resp.push(request);
+            });
+
+        res.status(200).json(resp);
+    })
+}
+
+exports.fulfillWithdrawal = (req, res, next) => {
+
+    if(!req.body.imageURL)
+    {
+        res.status(400).json({message:"add transaction image"});
+    }
+    if(!req.body.amount)
+    {
+        res.status(400).json({message:"add transaction amount"});
+    }
+    WithdrawRequest
+    .findOneAndUpdate({_id:req.body.withdrawalRequest},{fulfilled:true, imageURL: req.body.imageURL, amount : req.body.amount})
+    .then(request => {
+
+        Store.findOneAndUpdate({_id :request.store},{$inc:{credit :-req.body.amount}})
+        .then( store=>
+            res.status(200).json({message:"funds withdrawed successfully!!!"})
+        )
+        .catch(err=> res.json(err))
     })
 }

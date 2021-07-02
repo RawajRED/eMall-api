@@ -18,12 +18,12 @@ const clientSchema = new Schema({
     password: String,
     country: String,
     city: String,
-    phone: String,
-    resetOtp: String,
-    email: {
+    phone: {
         type: String,
         unique: true
     },
+    resetOtp: String,
+    email: String,
     image: String,
     verified: {
         type: Boolean,
@@ -106,6 +106,7 @@ const clientSchema = new Schema({
     }]
 });
 
+// TODO: Fix this shit
 clientSchema.pre('save', function(next){
     Cart.create({client: this._id})
     .then(resp => resp.toJSON())

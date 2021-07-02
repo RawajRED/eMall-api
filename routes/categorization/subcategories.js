@@ -8,6 +8,7 @@ router.post('/filters', subcategories.createFilter);
 
 router.get('/', subcategories.getSubcategories);
 router.get('/find-by-category/:_id', subcategories.getSubcategoriesByCategory);
+router.post('/search', subcategories.findSubcategory);
 router.get('/:id', subcategories.getSubcategory);
 router.post('/', subcategories.createSubcategory);
 router.put('/', subcategories.editSubcategory);

@@ -14,8 +14,8 @@ cron.schedule('59 23 * * *', () => {
     StorePayment
         .find({
             created_at: {
-                $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 14),
-                $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 13) 
+                $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1),
+                $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate()) 
             } 
         })
         .then(payments => {
@@ -119,20 +119,27 @@ exports.getStoreProductsByCategoryFull = (req, res, next) => {
     Store.find({categories: req.body.category, isDeleted:false})
     .select('title description categories products logo reviews')
     .sort('title')
-    .populate({
-        path: 'products',
-        match: {category: req.body.category, isDeleted : false,stock: {$gt: 0}},
-        select: 'title description discount price currency images options category',
-        populate: 'dealOfTheDay',
-        sort: 'title.en'
-    })
     .skip(req.body.skip)
     .populate('categories')
     .populate({
         path: 'reviews',
         select: 'stars'
     })
-    .then(store => res.json(store))
+    .then(async stores => {
+        const _stores = stores.map(async store => {
+            store.products = await Product.find({store, category: req.body.category, isDeleted : false, isStoreDeleted: false})
+            .select('title description discount price currency images options category extraText extraImage')
+            .populate('dealOfTheDay')
+            .sort('title.en')
+            .limit(5)
+            .exec();
+            return store;
+        })
+        Promise.all(_stores).then(resp => {
+            res.json(resp)
+        });
+        // await res.json(_stores)
+    })
     .catch(err => next({status: 404, message: err}));
 }
 
@@ -170,17 +177,10 @@ exports.getStoreProductsBySubcategory = (req, res, next) => {
 exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     const subcategory = req.body.subcategory;
     const category = subcategory.category;
-    const match = {isDeleted:false,subcategory: req.body.subcategory._id, stock: {$gt: 0}};
-    if(req.body.filter !== '')
-        match.filter = req.body.filter;
-    Store.find({categories: category,isDeleted:false, products: { $not: {$size: 0}}})
-    .select('title description categories products logo')
-    .populate({
-        path: 'products',
-        match,
-        select: 'title description discount price currency images options',
-        populate: 'dealOfTheDay'
-    })
+    Store.find({categories: category, isDeleted: false})
+    .select('title description categories logo reviews')
+    .sort('title')
+    .limit(4)
     .skip(req.body.skip)
     .populate('categories')
     .populate({
@@ -202,9 +202,8 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
         Promise.all(_stores).then(resp => {
             res.json(resp)
         });
-        // await res.json(_stores)
     })
-    .catch(err => next({status: 404, message: 'No Stores Found'}));
+    .catch(err => next({status: 404, message: err}));
 }
 
 exports.getSimilarStores = (req, res, next) => {
@@ -216,6 +215,39 @@ exports.getSimilarStores = (req, res, next) => {
     .select('title categories logo')
     .then(store => res.json(store))
     .catch(err => next(err))
+}
+
+exports.findStore = (req, res, next) => {
+    const criteria = req.body.criteria;
+    console.log('getting stores', criteria)
+    Store.find({isDeleted: false, title: {$regex: criteria, $options: "i"}})
+    .select('title description categories logo reviews')
+    .sort('title')
+    .limit(10)
+    .skip(req.body.skip)
+    .populate('categories')
+    .populate({
+        path: 'reviews',
+        select: 'stars'
+    })
+    .then(async stores => {
+        console.log(stores)
+        const _stores = stores.map(async store => {
+            const match = {store, isDeleted:false, isStoreDeleted: false}
+            store.products = await Product.find(match)
+            .select('title description discount price currency images options category extraText extraImage')
+            .populate('dealOfTheDay')
+            .sort('title.en')
+            .limit(5)
+            .exec();
+            return store;
+        })
+        Promise.all(_stores).then(resp => {
+            res.json(resp)
+        });
+    })
+    .catch(err => next({status: 404, message: err}));
+
 }
 
 exports.getMostPopularStores = (req, res, next) => {

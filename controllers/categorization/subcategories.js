@@ -13,6 +13,22 @@ exports.getSubcategory = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.findSubcategory = (req, res, next) => {
+    const criteria = req.body.criteria;
+    Subcategory.find({$or: [
+        {
+            "name.en": {$regex: criteria, $options: "i"}
+        },
+        {
+            "name.ar": {$regex: criteria, $options: "i"}
+        }
+    ]})
+    .limit(20)
+    .skip(req.body.skip)
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
 exports.getSubcategoriesByCategory = (req, res, next) => {
     Subcategory.find({category: req.params._id})
     .then(resp => res.json(resp))

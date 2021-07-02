@@ -176,6 +176,8 @@ exports.findProduct = (req, res, next) => {
             "title.ar": {$regex: criteria, $options: "i"}
         }
     ]})
+    .skip(req.body.skip)
+    .limit(30)
     .populate('store')
     .populate('dealOfTheDay')
     .then(resp => res.json(resp))

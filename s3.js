@@ -42,3 +42,8 @@ exports.uploadThumnail = multer({
     },
   }) 
 })
+
+exports.remove = async (Key) => s3.deleteObject({Bucket: 'emallbucket', Key}, (err, data) => {
+  if(err) throw new Error(err);
+  else console.log(data)
+})

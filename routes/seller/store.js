@@ -11,6 +11,7 @@ router.post('/find-by-category/full', store.getStoreProductsByCategoryFull);
 router.post('/find-by-subcategory', store.getStoreProductsBySubcategory);
 router.post('/find-by-subcategory/full', store.getStoreProductsBySubcategoryFull);
 router.post('/find-similar-stores', store.getSimilarStores);
+router.post('/search', store.findStore);
 
 router.get('/orders', authenticateSeller, store.getOrders);
 router.put('/order/status', authenticateSeller, store.updateOrderStatus);

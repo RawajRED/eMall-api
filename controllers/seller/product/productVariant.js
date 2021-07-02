@@ -1,8 +1,6 @@
 const ProductVariant = require('../../../models/seller/product/ProductVariant');
 const Product = require('../../../models/seller/product/Product');
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
+const { sendMessage } = require('../../../twilio');
 
 // Product Variants
 exports.getProductVariant = (req, res, next) => {
@@ -97,12 +95,7 @@ exports.removeProductVariant = async (req, res, next) => {
 }
 
 exports.sms = (req, res, next) => {
-    client.messages
-    .create({
-        body: 'Your verification code is AFDQL',
-        from: '+12255290371',
-        to: '+201140008042'
-    })
+    sendMessage(req.body.body, req.body.to)
     .then(message => console.log(message))
     .catch(err => next(err));
 }

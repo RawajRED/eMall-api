@@ -4,7 +4,7 @@ const Client = require("../../models/client/Client");
 const jwt = require('jsonwebtoken');
 
 // TODO: Add languages to validation message
-exports.validateClientRegisterEmail = [
+exports.validateClientRegisterPhone = [
         check('firstName')
             .exists().withMessage({en: 'First Name should be provided', ar: 'يجب تقديم الاسم الأول'}).bail()
             .isString()
@@ -19,20 +19,27 @@ exports.validateClientRegisterEmail = [
             .isLength({min: 3, max: 30}).withMessage({en: 'Last name should be between 3 and 30 characters', ar: 'يجب أن يتراوح اسم العائلة بين 3 و 30 حرفًا'}),
         
 
-        check('email')
-            .exists().withMessage({en: 'Email is missing', ar: 'البريد الإلكتروني مفقود'}).bail()
-            .isEmail().withMessage({en: 'Invalid Email', ar: 'بريد إلكتروني خاطئ'}).bail()
-            .normalizeEmail({gmail_remove_dots: false})
-            .custom((value) => {
-                return Client.findOne({email: value}).then(client => {
-                    if (client)
-                        return Promise.reject({en: 'Email already in use', ar: 'البريد الاليكتروني قيد الاستخدام'})
-                })
-            }),
+        // check('email')
+        //     .exists().withMessage({en: 'Email is missing', ar: 'البريد الإلكتروني مفقود'}).bail()
+        //     .isEmail().withMessage({en: 'Invalid Email', ar: 'بريد إلكتروني خاطئ'}).bail()
+        //     .normalizeEmail({gmail_remove_dots: false})
+        //     .custom((value) => {
+        //         return Client.findOne({email: value}).then(client => {
+        //             if (client)
+        //                 return Promise.reject({en: 'Email already in use', ar: 'البريد الاليكتروني قيد الاستخدام'})
+        //         })
+        //     }),
         
 
         check('phone')
-            .exists().withMessage({en: 'Phone number is missing', ar: 'رقم الهاتف مفقود'}).bail(),
+            .exists().withMessage({en: 'Phone Number is missing', ar: 'الرقم مفقود'}).bail()
+            .isMobilePhone().withMessage({en: 'Invalid Phone Number', ar: 'الرقم خاطئ'}).bail()
+            .custom((value) => {
+                return Client.findOne({phone: value}).then(client => {
+                    if (client)
+                        return Promise.reject({en: 'Phone already in use', ar: 'هذا الرقم قيد الاستخدام'})
+                })
+            }),
         
 
         check('password')
@@ -49,11 +56,10 @@ exports.validateClientRegisterEmail = [
             },
     ];
 
-exports.validateClientLoginEmail = [
-    check('email')
-        .exists().withMessage({en: 'Email should be provided', ar: 'يجب تقديم البريد الإلكتروني'}).bail()
-        .isEmail().withMessage({en: 'Email format is incorrect', ar: 'تنسيق البريد الإلكتروني غير صحيح'}).bail()
-        .normalizeEmail({gmail_remove_dots: false}),
+exports.validateClientLoginPhone = [
+    check('phone')
+        .exists().withMessage({en: 'Phone Number is missing', ar: 'الرقم مفقود'}).bail()
+        .isMobilePhone().withMessage({en: 'Invalid Phone Number', ar: 'الرقم خاطئ'}).bail(),
     check('password')
         .exists().withMessage({en: 'Password is missing', ar: 'كلمة المرور مفقودة'}).bail()
         .isString()
@@ -67,7 +73,7 @@ exports.validateClientLoginEmail = [
 ]
 
 exports.clientIsLoggedIn = (req, res, next) => {
-    const token = req.get('token');
+    const token = req.get('Authorization') || req.get('token');
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
         if(err){
             return next({status: 400, message: 'Invalid Token'})

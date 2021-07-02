@@ -8,6 +8,22 @@ exports.createCategory = (req, res, next) => {
     .catch(err => next(err))
 }
 
+exports.findCategory = (req, res, next) => {
+    const criteria = req.body.criteria;
+    Category.find({$or: [
+        {
+            "name.en": {$regex: criteria, $options: "i"}
+        },
+        {
+            "name.ar": {$regex: criteria, $options: "i"}
+        }
+    ]})
+    .limit(20)
+    .skip(req.body.skip)
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
 exports.getCategories = (req, res, next) => {
     Category.find({})
     .then(resp => res.json(resp))

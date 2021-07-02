@@ -5,10 +5,10 @@ const logger = require('morgan');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const cors = require('cors');
-const { upload } = require('./s3');
+const { upload, remove } = require('./s3');
 
 const Variables = require('./models/other/Variables');
-const Product = require('./models/seller/product/Product');
+const Client = require('./models/seller/product/Product');
 const {getVariables, changeVariables} = require('./variables');
 
 
@@ -52,8 +52,8 @@ mongoose.connect(
     useUnifiedTopology: true
   }
 )
-.then(() => {
-  console.log('Connection to the database successful');
+.then(async () => {
+  console.log('Connection to the database is successful!');
   Variables.findOne({})
   .then(resp => {
     changeVariables(resp);
@@ -94,6 +94,13 @@ app.use('/api/advertisement', adsRouter);
 app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
 app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));
 
+app.post('/api/remove', async (req, res) => {
+  const key = new URL(req.body.key).pathname.substr(1);
+  remove(key)
+  .then(() => res.sendStatus(200))
+  .catch(err => next(err));
+});
+
 app.get('/api/variables', (req, res) => res.json(getVariables()));
 
 app.use(
@@ -123,7 +130,7 @@ app.use((err, req, res, next  ) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  res.status = err.status || 500;
+  res.status(err.status || 500);
   res.json(err);
 });
 

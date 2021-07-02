@@ -11,40 +11,51 @@ const DealOfTheDay = require('../../models/other/DealOfTheDay');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const sendMail = require('../../sendgrid').sendMail;
+const { sendMessage } = require('../../twilio');
 const { getVariables } = require('../../variables');
 
-exports.clientRegisterEmail = (req, res, next) => {
+// TODO: Login with email
+exports.clientRegisterPhone = (req, res, next) => {
     const password = req.body.password;
     const saltRounds = 10;
-    bcrypt.hash(password, saltRounds, (err, hash) => {
-        if(err)
-            return next({status: 500, message: 'Internal Server Error'})
-        const otp = generateOtp(5);
-        const client = {
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
-            password: hash,
-            phone : req.body.phone,
-            otp
-        };
-        Client.create(client)
-        .then(resp => resp.toJSON())
-        .then(resp => {
-            sendMail({
-                mail: client.email,
-                subject: 'Please Verify Your Email',
-                text: `Verify your email with the code ${otp}`,
-                html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
+    const otp = generateOtp(5);
+    // TODO: Revert this
+    const phone = normalizePhone('+201140008042' || req.body.phone);
+    bcrypt.hash(password, saltRounds, (errPass, hashPass) => {
+        // bcrypt.hash(otp, saltRounds, (errOTP, hashOTP) => {
+            
+            if(errPass)
+                return next({status: 500, message: 'Internal Server Error'})
+            const client = {
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                password: hashPass,
+                phone,
+                otp
+            };
+            Client.create(client)
+            .then(resp => {
+                console.log('im resp', resp)
+                return resp.toJSON();
             })
-            .then(() => {
-                delete resp['password'];
-                delete resp['otp'];
-                Client.populate(resp, 'wishlist cart')
-                .then(resp => res.json(resp));
-            });
-        })
-        .catch(err =>next({status: 400, message: err}));
+            .then(resp => {
+                
+                // sendMail({
+                //     mail: client.email,
+                //     subject: 'Please Verify Your Email',
+                //     text: `Verify your email with the code ${otp}`,
+                //     html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
+                // })
+                sendMessage(`Your verification code is ${otp}`, phone)
+                .then(() => {
+                    delete resp['password'];
+                    delete resp['otp'];
+                    Client.populate(resp, 'wishlist cart')
+                    .then(resp => res.json(resp));
+                });
+            })
+            .catch(err =>next({status: 400, message: err}));
+        // })
     })
 };
 
@@ -97,8 +108,9 @@ exports.clientLoginFacebook = (req, res, next) => {
     })
 }
 
-exports.clientLoginEmail = (req, res, next) => {
-    Client.findOne({email: req.body.email})
+exports.clientLoginPhone = (req, res, next) => {
+    const phone = normalizePhone(req.body.phone);
+    Client.findOne({phone})
     .populate({
         path: 'wishlist',
         populate: {
@@ -113,7 +125,7 @@ exports.clientLoginEmail = (req, res, next) => {
             bcrypt.compare(req.body.password, client.password, (err, result) => {
                 delete client.password;
                 if(err)
-                    return next({status: 500, message: {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}});
+                    return next({status: 500, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]});
                 if(result){
                     if(client.verified){
                         const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
@@ -121,12 +133,13 @@ exports.clientLoginEmail = (req, res, next) => {
                     }
                     else {
                         const otp = client.otp;
-                        sendMail({
-                            mail: client.email,
-                            subject: 'Please Verify Your Email',
-                            text: `Verify your email with the code ${otp}`,
-                            html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
-                        })
+                        // sendMail({
+                        //     mail: client.email,
+                        //     subject: 'Please Verify Your Email',
+                        //     text: `Verify your email with the code ${otp}`,
+                        //     html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
+                        // })
+                        sendMessage(`Your verification code is ${otp}`, phone)
                         .then(() => {
                             Client.updateOne({_id: client._id}, {otp})
                             .then(() => {
@@ -137,11 +150,11 @@ exports.clientLoginEmail = (req, res, next) => {
                         });
                     }
                 }
-                else next({message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}, status: 401});
+                else next({status: 401, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]});
             })
-        else next({status: 404, message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}})
+        else next({status: 404, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]})
     })
-    .catch(err => next({status: 400, message:  {en: 'Incorrect Email or Password', ar: 'بريد أو كلمة مرورغير صحيحة'}}))
+    .catch(err => next({status: 400, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]}))
 }
 
 exports.clientLoginToken = (req, res, next) => {
@@ -161,8 +174,32 @@ exports.clientLoginToken = (req, res, next) => {
     .catch(err => next(err));
 }
 
-exports.clientVerifyOtp = (req, res, next) => {
-    Client.findOneAndUpdate({email: req.body.email, otp: req.body.otp.toUpperCase()}, {verified: true}, {$unset: {otp: 1}, new: true})
+exports.clientVerifyOtp = async (req, res, next) => {
+    const phone = normalizePhone(req.body.phone);
+    // const client = await Client.findOne({phone});
+    // if(!client)
+    //     return next({status: 404, message: 'Incorrect PIN or Password'})
+    // bcrypt.compare(req.body.otp, client.otp, (err, resp) => {
+    //     if(err)
+    //         return next({status: 401, message: 'Incorrect PIN or Password'})
+    //     client
+    //     .populate({
+    //         path: 'wishlist',
+    //         populate: {
+    //             path: 'products',
+    //             populate: 'store'
+    //         }
+    //     })
+    //     .populate('cart');
+    //     client.otp = null;
+    //     client.verified = true;
+    //     console.log('client', client);
+    //     client.save();
+    //     delete client.password;
+    //     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
+    //     return res.json({client, token, type: 'client'});
+    // })
+    Client.findOneAndUpdate({phone, otp: req.body.otp.toUpperCase()}, {verified: true}, {$unset: {otp: 1}, new: true})
     .populate({
         path: 'wishlist',
         populate: {
@@ -185,24 +222,27 @@ exports.clientVerifyOtp = (req, res, next) => {
 
 exports.clientForgotPassword = (req, res, next) => {
     const otp = generateOtp(4);
-    Client.findOneAndUpdate({email: req.body.email}, {resetOtp: otp}, {new: true})
+    const phone = normalizePhone(req.body.phone);
+    Client.findOneAndUpdate({phone}, {resetOtp: otp}, {new: true})
     .then(client => {
-        sendMail({
-            mail: client.email,
-            subject: 'Forget Password',
-            text: `Change your password using this code : ${otp}`,
-            html: `<p> Change your password using this code <strong>${otp}</strong></p>`
-        })
+        // sendMail({
+        //     mail: client.email,
+        //     subject: 'Forget Password',
+        //     text: `Change your password using this code : ${otp}`,
+        //     html: `<p> Change your password using this code <strong>${otp}</strong></p>`
+        // })
+        sendMessage(`Your password reset code is ${otp}`, phone)
         .then(() => {
             res.json({confirm: true})
-        });
+    });
         
     })
     .catch(err => next(err));
 }
 
 exports.clientChangePassword = (req, res, next) => {
-    Client.findOne({email: req.body.email, resetOtp: req.body.otp})
+    const phone = normalizePhone(req.body.phone);
+    Client.findOne({phone, resetOtp: req.body.otp})
     .then(client => {
         if(!client) return res.json({confirmed: false})
         const password = req.body.password;
@@ -684,4 +724,13 @@ exports.requestRefund = (req, res, next) => {
 /* -------------------------------------------------------------------------- */
 
 
-const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
+// const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
+const generateOtp = (number = 5) => '12345';
+
+const normalizePhone = (phone) => {
+    if(phone.match(/^\+20[0-9]{10}$/))
+        return phone;
+    else if(phone.match(/^0[0-9]{10}$/))
+        return `+2${phone}`;
+    else return '';
+}

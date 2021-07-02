@@ -111,7 +111,7 @@ exports.validateSeller = [
 ]
 
 exports.authenticateSeller = (req, res, next) => {
-    const token = req.get('token');
+    const token = req.get('token') || req.get('Authorization');
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
         if(err)
             return next({status: err.status, message: err.message})

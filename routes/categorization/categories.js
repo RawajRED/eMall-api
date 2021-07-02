@@ -4,8 +4,9 @@ const categories = require('../../controllers/categorization/categories');
 const { validateCategoryCreate } = require('../../validators/categorization/categoryValidator');
 
 router.get('/', categories.getCategories);
-router.get('/:id', categories.getCategory);
 router.post('/multiple', categories.createCategory);
+router.post('/search', categories.findCategory);
+router.get('/:id', categories.getCategory);
 router.post('/', validateCategoryCreate, categories.createCategory);
 router.put('/', categories.editCategory);
 router.delete('/', categories.deleteCategory);

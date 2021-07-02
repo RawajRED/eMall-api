@@ -3,13 +3,14 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const client = require('twilio')(accountSid, authToken);
 
-const sendMessage = async (body, to) => client.messages
-    .create({
-        body,
-        from: '+12255290371',
-        to
-    })
-    .catch(err => console.log(err));
 
-export default sendMessage;
+// TODO: Enable this
+// exports.sendMessage = async (body, to) => client.messages
+//     .create({
+//         body,
+//         from: '+12182768255',
+//         to
+//     })
+//     .catch(err => console.log(err));
 
+exports.sendMessage = async () => {}

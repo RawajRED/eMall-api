@@ -46,7 +46,10 @@ router.post('/finance/funds',adminValidators.adminIsLoggedIn, admin.getFunds);
 router.get('/finance/fundsFull',adminValidators.adminIsLoggedIn, admin.getFundsFull);
 
 router.get('/finance/store/:id',adminValidators.adminIsLoggedIn, admin.getStoreFunds);
+router.get('/finance/store/withdraws/:id',adminValidators.adminIsLoggedIn, admin.getStoreWithdraws)
 
+router.get('/finance/withdraws',adminValidators.adminIsLoggedIn, admin.getWithdraws)
+router.post('/finance/fulfill-withdraw',adminValidators.adminIsLoggedIn, admin.fulfillWithdrawal)
 
 
 

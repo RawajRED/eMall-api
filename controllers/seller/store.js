@@ -506,7 +506,7 @@ exports.getPendingFunds = (req, res, next) => {
 }
 
 exports.requestWithdrawal = (req, res, next) => {
-    const {store, seller, amount} = req.body;
+    const {store, seller} = req.body;
     WithdrawRequest.findOneAndUpdate(
         {store: store._id, seller: seller._id, fulfilled: false},
         {store: store._id, seller: seller._id},

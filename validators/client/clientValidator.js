@@ -72,15 +72,47 @@ exports.validateClientLoginPhone = [
     }
 ]
 
+exports.checkPhone = [
+    check('phone')
+    .exists().withMessage({en: 'Phone Number is missing', ar: 'الرقم مفقود'}).bail()
+    .isMobilePhone().withMessage({en: 'Invalid Phone Number', ar: 'الرقم خاطئ'}).bail()
+    .custom((value) => {
+        return Client.findOne({phone: value}).then(client => {
+            if (client)
+                return Promise.reject({en: 'Phone already in use', ar: 'هذا الرقم قيد الاستخدام'})
+        })
+    }),
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            next({status: 422, errors: errors.array()});
+        next();
+        },
+]
+
 exports.clientIsLoggedIn = (req, res, next) => {
     const token = req.get('Authorization') || req.get('token');
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
         if(err){
-            return next({status: 400, message: 'Invalid Token'})
+            return next({status: 401, message: 'Invalid Token'})
         }
         else{
             req.body.client = decoded.client;
             next();
         }
     });
+}
+
+exports.clientRefreshToken = (req, res, next) => {
+    const token = req.get('Authorization') || req.get('token');
+    jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
+        if(err){
+            return next({status: 401, message: 'Invalid Token'})
+        }
+        else{
+            req.body.client = decoded.client;
+            next();
+        }
+    });
+
 }

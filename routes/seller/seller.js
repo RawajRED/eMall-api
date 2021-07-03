@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const seller = require('../../controllers/seller/seller');
-const { validateSellerLogin, validateSellerRegister, validateStoreRegister, validateSeller, authenticateSeller } = require('../../validators/seller/sellerValidator');
+const { validateSellerLogin, validateSellerRegister, sellerRefreshToken, validateSeller, authenticateSeller } = require('../../validators/seller/sellerValidator');
 // const clientValidators = require('../../validators/seller/sellerValidator');
 
 router.post('/bulk', seller.createSeller);
 router.post('/register', validateSellerRegister, seller.createStoreAndSellerEmail);
 router.post('/login', validateSellerLogin, seller.sellerSignInEmail);
 router.get('/login/token', authenticateSeller, seller.sellerLoginToken);
+router.get('/login/token/refresh', sellerRefreshToken, seller.sellerRefreshToken); 
 router.post('/login/facebook', seller.sellerSignInFacebook);
 router.post('/verify', validateSeller, (req, res) => res.json({done: true}))
 router.post('/forgot-password', seller.sellerForgotPassword);

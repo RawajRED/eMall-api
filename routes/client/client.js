@@ -30,6 +30,12 @@ router.post('/store-review', clientValidators.clientIsLoggedIn, client.leaveStor
 // ? PROFILE
 router.get('/profile', clientValidators.clientIsLoggedIn, client.getProfile);
 router.put('/profile', clientValidators.clientIsLoggedIn, client.updateProfile);
+router.post('/forgot-password', client.clientForgotPassword);
+router.post('/change-password', clientValidators.validateClientLoginPhone, client.clientChangePassword);
+router.post('/change-password-direct', clientValidators.clientIsLoggedIn, client.clientChangePasswordDirect);
+router.post('/check-new-phone', clientValidators.clientIsLoggedIn, clientValidators.checkPhone, client.sendOtpToNewPhone);
+router.post('/verify-new-phone', clientValidators.clientIsLoggedIn, client.verifyNewPhone);
+router.post('/forgot-password/check-otp', client.clientCheckOtp);
 
 // ? PAYMENTS
 router.get('/payments', clientValidators.clientIsLoggedIn, client.getPayments);
@@ -41,11 +47,9 @@ router.post('/refund', clientValidators.clientIsLoggedIn, client.requestRefund);
 router.post('/register', clientValidators.validateClientRegisterPhone, client.clientRegisterPhone); //tested
 router.post('/login', clientValidators.validateClientLoginPhone, client.clientLoginPhone); //tested
 router.get('/login/token', clientValidators.clientIsLoggedIn, client.clientLoginToken); 
+router.get('/login/token/refresh', clientValidators.clientRefreshToken, client.clientRefreshToken); 
 router.post('/login/otp', client.clientVerifyOtp); //tested
 router.post('/login/facebook', client.clientLoginFacebook);
-router.post('/forgot-password', client.clientForgotPassword);
-router.post('/change-password', clientValidators.validateClientLoginPhone,client.clientChangePassword);
-router.post('/forgot-password/check-otp', client.clientCheckOtp);
 router.get('/subtotal', clientValidators.clientIsLoggedIn, client.clientSubtotal);
 router.get('/total', clientValidators.clientIsLoggedIn, client.clientTotal);
 router.put('/', clientValidators.clientIsLoggedIn, client.clientUpdateInfo);

@@ -281,7 +281,6 @@ exports.getFeaturedProducts = (req, res, next) => {
         populate: 'store',
         match :{isDeleted :false}
     })
-    .limit(5)
     .then(resp => res.json(resp));
 }
 

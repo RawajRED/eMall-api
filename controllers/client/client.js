@@ -87,23 +87,26 @@ exports.clientLoginFacebook = (req, res, next) => {
                     .then(_client => {
                         Client.populate(_client, 'wishlist cart')
                         .then(client => {
-                            const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-                            return res.json({client: client, token, type: 'client'});
+                            const accessToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
+                            const refreshToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '3650d'});
+                            return res.json({client: client, accessToken, refreshToken, type: 'client'});
                         })
                     });
                 }
             })
             .then(client => {
-                const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-                return res.json({client, token, type: 'client'});
+                const accessToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
+                const refreshToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '3650d'});
+                return res.json({client, accessToken, refreshToken, type: 'client'});
             })
             .catch(err => console.log(err))
 
         }})
     .then(client => {
         if(client){
-            const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-            return res.json({client, token, type: 'client'})
+            const accessToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
+            const refreshToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '3650d'});
+            return res.json({client, accessToken, refreshToken, type: 'client'});
         }
     })
 }
@@ -128,8 +131,9 @@ exports.clientLoginPhone = (req, res, next) => {
                     return next({status: 500, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]});
                 if(result){
                     if(client.verified){
-                        const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
-                        return res.json({client, token, type: 'client'})
+                        const accessToken = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
+                        const refreshToken = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '365d'});
+                        return res.json({client, accessToken, refreshToken, type: 'client'})
                     }
                     else {
                         const otp = client.otp;
@@ -150,11 +154,11 @@ exports.clientLoginPhone = (req, res, next) => {
                         });
                     }
                 }
-                else next({status: 401, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]});
+                else next({status: 403, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]});
             })
-        else next({status: 404, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]})
+        else next({status: 403, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]})
     })
-    .catch(err => next({status: 400, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]}))
+    .catch(err => next({status: 403, errors: [{en: 'Incorrect Phone Number or Password', ar: 'رقم الهاتف أو كلمة مرورغير صحيحة'}]}))
 }
 
 exports.clientLoginToken = (req, res, next) => {
@@ -168,8 +172,24 @@ exports.clientLoginToken = (req, res, next) => {
     })
     .populate('cart')
     .then(client => {
-        const token = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
-        return res.json({client, token, type: 'client'})
+        return res.json({client, type: 'client'})
+    })
+    .catch(err => next(err));
+}
+
+exports.clientRefreshToken = (req, res, next) => {
+    Client.findOne({_id: req.body.client})
+    .populate({
+        path: 'wishlist',
+        populate: {
+            path: 'products',
+            populate: 'store'
+        }
+    })
+    .populate('cart')
+    .then(client => {
+        const accessToken = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
+        return res.json({client, type: 'client', token: accessToken});
     })
     .catch(err => next(err));
 }
@@ -178,10 +198,10 @@ exports.clientVerifyOtp = async (req, res, next) => {
     const phone = normalizePhone(req.body.phone);
     // const client = await Client.findOne({phone});
     // if(!client)
-    //     return next({status: 404, message: 'Incorrect PIN or Password'})
+    //     return next({status: 403, message: 'Incorrect PIN or Password'})
     // bcrypt.compare(req.body.otp, client.otp, (err, resp) => {
     //     if(err)
-    //         return next({status: 401, message: 'Incorrect PIN or Password'})
+    //         return next({status: 403, message: 'Incorrect PIN or Password'})
     //     client
     //     .populate({
     //         path: 'wishlist',
@@ -199,7 +219,7 @@ exports.clientVerifyOtp = async (req, res, next) => {
     //     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
     //     return res.json({client, token, type: 'client'});
     // })
-    Client.findOneAndUpdate({phone, otp: req.body.otp.toUpperCase()}, {verified: true}, {$unset: {otp: 1}, new: true})
+    Client.findOneAndUpdate({phone, otp: req.body.otp.toUpperCase()}, {verified: true, $unset: {otp: 1}}, {new: true})
     .populate({
         path: 'wishlist',
         populate: {
@@ -213,8 +233,9 @@ exports.clientVerifyOtp = async (req, res, next) => {
             return next({status: 400, message: 'Incorrect PIN'})
         } else {
             delete client.password;
-            const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
-            return res.json({client, token, type: 'client'});
+            const accessToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
+            const refreshToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '365d'});
+            return res.json({client, accessToken, refreshToken, type: 'client'});
         }
     })
     .catch(err => next({status: 400, message: 'Incorrect PIN'}))
@@ -249,7 +270,7 @@ exports.clientChangePassword = (req, res, next) => {
         const saltRounds = 10;
         bcrypt.hash(password, saltRounds, (err, hash) => {
             if(err) throw new Error(err);
-            Client.findOneAndUpdate({_id: client._id}, {password: hash, resetOtp : null})
+            Client.findOneAndUpdate({_id: client._id}, {password: hash, $unset: {resetOtp: null}})
             .then(() => {
                 res.json({confirmed: true});
             })
@@ -258,12 +279,60 @@ exports.clientChangePassword = (req, res, next) => {
     .catch(err => next(err));
 }
 
+exports.clientChangePasswordDirect = (req, res, next) => {
+    const password = req.body.password;
+    const newPassword = req.body.newPassword;
+    Client.findOne({_id: req.body.client})
+    .then(client => {
+        bcrypt.compare(password, client.password, (err, result) => {
+            if(err) return next({status: 403, message: {en: 'Incorrrect Current Password', ar: 'كلمة المرور الحالية غير صحيحة'}});
+            if(!result) return next({status: 403, message: {en: 'Incorrrect Current Password', ar: 'كلمة المرور الحالية غير صحيحة'}});
+            const saltRounds = 10;
+            bcrypt.hash(newPassword, saltRounds, (err, hash) => {
+                if(err) throw new Error(err);
+                Client.findOneAndUpdate({_id: client._id}, {password: hash})
+                .then(() => {
+                    res.sendStatus(200);
+                })
+                .catch(err);
+            });
+        });
+    })
+    .catch(err => next(err));
+
+}
+
 exports.clientCheckOtp = (req, res, next) => {
     Client.findOne({email: req.body.email})
     .then(client => {
         if(client.resetOtp === req.body.otp.toUpperCase())
             return res.json({confirmed: true})
         return res.json({confirmed: false})
+    })
+    .catch(err => next(err));
+}
+
+exports.sendOtpToNewPhone = async (req, res, next) => {
+    const phone = normalizePhone(req.body.phone);
+    const otp = generateOtp(5);
+    sendMessage(phone, `Your pin is ${otp}`)
+    .then(() => {
+        Client.findOneAndUpdate({_id: req.body.client}, {otp, newPhone: phone}, {new: true})
+        .then(() => res.sendStatus(200))
+        .catch(err => next(err));
+    })
+    .catch(err => next(err));
+}
+
+exports.verifyNewPhone = (req, res, next) => {
+    Client.findOne({_id: req.body.client})
+    .then(client => {
+        if(client.otp === req.body.otp){
+            Client.findOneAndUpdate({_id: req.body.client}, {phone: client.newPhone, $unset: {otp: 1, newPhone: 1}}, {new: true})
+            .then(() => res.sendStatus(200))
+            .catch(err => next(err));
+        }
+        else return res.sendStatus(403);
     })
     .catch(err => next(err));
 }
@@ -381,7 +450,7 @@ exports.addToCart = (req, res, next) => {
     const options = req.body.options;
     const text = req.body.text;
     const image = req.body.image;
-    const code = generateOtp(7);
+    const code = generateAlphaNumericOtp(7);
 
     Cart.findOne({client})
     .then(_cart => {
@@ -537,7 +606,7 @@ exports.getOrders = (req, res, next) => {
 */
 exports.placeOrder = (req, res, next) => {
     const client = req.body.client;
-    const code = generateOtp(7);
+    const code = generateAlphaNumericOtp(7);
 
     // ! Get Cart Content
     Cart.findOne({client})
@@ -628,7 +697,7 @@ exports.cancelOrder = (req, res, next) => {
 */
 exports.getOrderProducts = (req, res, next) => {
     const code = req.params.code;
-    StoreOrder.find({code})
+    StoreOrder.find({code, client: req.body.client})
     .populate('orders.product')
     .then(resp => {
         // const products = resp.map(order => order.orders);
@@ -725,7 +794,9 @@ exports.requestRefund = (req, res, next) => {
 
 
 // const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
-const generateOtp = (number = 5) => '12345';
+const generateOtp = (number = 5) => '1234567890'.substr(0, number);
+
+const generateAlphaNumericOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
 
 const normalizePhone = (phone) => {
     if(phone.match(/^\+20[0-9]{10}$/))

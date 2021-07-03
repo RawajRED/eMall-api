@@ -73,10 +73,11 @@ exports.sellerSignInEmail = (req, res, next) => {
             .then(result => {
                 if(result){
                     delete seller.password;
-                    const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+                    const accessToken = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+                    const refreshToken = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '365d'});
                     const store = seller.store;
                     delete seller.store;
-                    return res.json({seller, store, token, type: 'store'})
+                    return res.json({seller, store, accessToken, refreshToken, type: 'store'})
                 } else throw new Error();
             })
             .catch(err => next({status: 403, errors: [{msg: `Incorrect email or password` }]}))
@@ -95,10 +96,26 @@ exports.sellerLoginToken = (req, res, next) => {
     })
     .then(seller => {
         delete seller.password;
-        const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
         const store = seller.store;
         delete seller.store;
-        return res.json({seller, store, token, type: 'store'})
+        return res.json({seller, store, type: 'store'})
+    })
+    .catch(err => next(err));
+}
+
+exports.sellerRefreshToken = (req, res, next) => {
+    Seller.findOne({_id: req.body.seller._id})
+    .populate({
+        path: 'store',
+        select: 'approved logo title page',
+        populate: {path: 'page', select: 'coverImage'}
+    })
+    .then(seller => {
+        const accessToken = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
+        delete seller.password;
+        const store = seller.store;
+        delete seller.store;
+        return res.json({seller, store, type: 'store', accessToken})
     })
     .catch(err => next(err));
 }
@@ -119,8 +136,9 @@ exports.sellerSignInFacebook = (req, res, next) => {
         resp.toJSON()
     })
     .then(seller => {
-        const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
-        return res.json({seller, store, token})
+        const accessToken = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+        const refreshToken = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '3650d'});
+        return res.json({seller, store, accessToken, refreshToken});
     })
     .catch(err => {
         Seller.findOneAndUpdate({email: req.body.email}, {facebookId: req.body.id}, {new: true})
@@ -131,10 +149,11 @@ exports.sellerSignInFacebook = (req, res, next) => {
             .then(resp => resp.toJSON())
             .then(seller => {
                 if(seller) {
-                    const token = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+                    const accessToken = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '90d'});
+                    const refreshToken = jwt.sign({ seller }, req.app.get('secret_key'), { expiresIn: '3650d'});
                     const store = seller.store;
                     delete seller.store;
-                    return res.json({store, seller, token});
+                    return res.json({store, seller, accessToken, refreshToken});
                 } else return next({status: 404, msg: `No Store registered on this Facebook account`});
             })
             .catch(err => next({status: 404, msg: `No Store registered on this Facebook account`}));

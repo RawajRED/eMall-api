@@ -116,7 +116,10 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 }
 
 exports.getStoreProductsByCategoryFull = (req, res, next) => {
-    Store.find({categories: req.body.category, isDeleted:false})
+    const category = req.body.category;
+    const match = {categories: category, isDeleted: false, title: {$regex: req.body.search, $options: "i"}};
+    console.log(match)
+    Store.find(match)
     .select('title description categories products logo reviews')
     .sort('title')
     .skip(req.body.skip)

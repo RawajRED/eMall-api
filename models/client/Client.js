@@ -30,6 +30,7 @@ const clientSchema = new Schema({
         default: false
     },
     otp: String,
+    newPhone: String,
     orders: [{
         type: Schema.Types.ObjectId,
         ref: 'Order',

@@ -13,4 +13,4 @@ const client = require('twilio')(accountSid, authToken);
 //     })
 //     .catch(err => console.log(err));
 
-exports.sendMessage = async () => {}
+exports.sendMessage = async (body, to) => {}

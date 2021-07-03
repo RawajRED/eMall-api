@@ -526,3 +526,13 @@ exports.getPayments = (req, res, next) => {
 const checkArrayNotAll = (array, number) => {
     return array.reduce((elem, next) => elem && (next !== number), true);
 }
+
+
+exports.getStoreId = (req, res, next) => {
+    Store.findOne({title: req.body.store})
+    .select('_id categories')
+    .then( store => {
+        next({status:200,store:store});
+    })
+    .catch(err => next({status: 404, message: err}));
+}

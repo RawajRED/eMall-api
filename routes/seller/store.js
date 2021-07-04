@@ -8,6 +8,9 @@ const { upload } = require('../../s3');
 router.get('/most-popular', store.getMostPopularStores);
 router.post('/find-by-category', store.getStoreProductsByCategory);
 router.post('/store_ID', store.getStoreId);
+router.post('/category_ID', store.getCategory);
+router.post('/subcategory_ID', store.getSubCategory);
+
 router.post('/find-by-category/full', store.getStoreProductsByCategoryFull);
 router.post('/find-by-subcategory', store.getStoreProductsBySubcategory);
 router.post('/find-by-subcategory/full', store.getStoreProductsBySubcategoryFull);

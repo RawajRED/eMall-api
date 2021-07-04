@@ -27,7 +27,8 @@ exports.createStoreAndSellerEmail = (req, res, next) => {
         description: req.body.store.description,
         categories: req.body.store.categories,
         otherCategory: req.body.store.otherCategory,
-        logo: req.body.store.logo
+        logo: req.body.store.logo,
+        addresses: req.body.store.addresses
     }
     Store.create(store)
     .then(res => res.toJSON())

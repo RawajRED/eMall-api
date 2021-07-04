@@ -1,5 +1,6 @@
 const Admin = require('../../models/admin/Admin');
 const FeaturedProduct = require('../../models/other/FeaturedProduct');
+const FeaturedStore = require('../../models/other/FeaturedStore');
 const Order = require('../../models/orders/Order');
 const Store = require('../../models/seller/Store');
 const Seller = require('../../models/seller/Seller');
@@ -9,9 +10,13 @@ const StorePayment = require('../../models/seller/StorePayment');
 const Product = require('../../models/seller/product/Product');
 const RefundRequest = require('../../models/orders/RefundRequest');
 const Variables = require('../../models/other/Variables');
+const Cities = require('../../models/other/Cities');
+const Governate = require('../../models/other/Governates');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { changeVariables, getVariables } = require('../../variables');
+const { changeVariables } = require('../../variables');
+const { changeCities } = require('../../cities');
+const { changeGovernates } = require('../../governates');
 
 exports.adminLoginEmail = (req, res, next) => {
     Admin.findOne({email: req.body.email})
@@ -227,6 +232,50 @@ exports.changeVariables = (req, res, next) => {
     .catch(err => next(err));
 }
 
+// * Cities
+
+exports.addCity = (req, res, next) => {
+    Cities.create(req.body).then(city => {
+        Cities.find({}).then(resp => {
+            changeCities(resp);
+            res.json(resp);
+        })
+    })
+    .catch(err => next(err));
+}
+
+exports.updateCity = (req, res, next) => {
+    Cities.findOneAndUpdate({_id: req.body._id}, {title: req.body.title, price: req.body.price}, {new: true}).then(city => {
+        Cities.find({}).then(resp => {
+            changeCities(resp);
+            res.json(resp);
+        })
+    })
+    .catch(err => next(err));
+}
+
+// * Governate
+
+exports.addGovernate = (req, res, next) => {
+    Governate.create(req.body).then(gov => {
+        Governate.find({}).then(resp => {
+            changeGovernates(resp);
+            res.json(resp);
+        })
+    })
+    .catch(err => next(err));
+}
+
+exports.updateGovernate = (req, res, next) => {
+    Governate.findOneAndUpdate({_id: req.body._id}, {title: req.body.title, price: req.body.price}, {new: true}).then(city => {
+        Governate.find({}).then(resp => {
+            changeGovernates(resp);
+            res.json(resp);
+        })
+    })
+    .catch(err => next(err));
+}
+
 // * Featured Products
 
 exports.getFeaturedProducts = (req, res, next) => {
@@ -247,6 +296,27 @@ exports.addFeaturedProducts = (req, res ,next) => {
 
 exports.removeFeaturedProduct = (req, res, next) => {
     FeaturedProduct.findOneAndDelete({_id: req.query.id})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+// * Featured Stores
+
+exports.getFeaturedStores = (req, res, next) => {
+    FeaturedStore.find({})
+    .populate('categories')
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.addFeaturedStores = (req, res ,next) => {
+    FeaturedStore.create(req.body)
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.removeFeaturedStores = (req, res, next) => {
+    FeaturedStore.findOneAndDelete({_id: req.body.store})
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }

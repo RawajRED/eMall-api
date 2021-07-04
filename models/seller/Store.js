@@ -77,7 +77,37 @@ const storeSchema = new Schema({
     isDeleted : {
         type : Boolean,
         default : false
-    }
+    },
+    addresses: [{
+        governate: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        street: {
+            type: String,
+            required: true
+        },
+        building: {
+            type: String,
+            required: true
+        },
+        apartment: {
+            type: String,
+            required: true
+        },
+        extra: {
+            type: String,
+            default: ''
+        },
+        active: {
+            type: Boolean,
+            default: false
+        }
+    }]
 }, {timestamps: { createdAt: 'created_at'}});
 
 storeSchema.post('save', function(doc){

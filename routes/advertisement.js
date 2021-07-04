@@ -25,6 +25,9 @@ router.post('/dealsoftheday', authenticateSeller, advertisement.createDealOfTheD
 // * Featured Products
 router.get('/featured-products', advertisement.getFeaturedProducts);
 
+// * Featured Stores
+router.get('/featured-stores', advertisement.getFeaturedStores);
+
 // * Main Ads
 router.get('/main', advertisement.getMainAds);
 router.post('/main', advertisement.createMainAd);

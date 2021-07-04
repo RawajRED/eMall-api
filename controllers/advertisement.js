@@ -3,8 +3,10 @@ const HomeAd = require('../models/other/HomeAd');
 const BannerAd = require('../models/other/BannerAd');
 const DealsOfTheDay = require('../models/other/DealOfTheDay');
 const Store = require('../models/seller/Store');
+const StorePage = require('../models/seller/StorePage');
 const Product = require('../models/seller/product/Product');
 const FeaturedProduct = require('../models/other/FeaturedProduct');
+const FeaturedStore = require('../models/other/FeaturedStore');
 const { getVariables } = require('../variables');
 
 const cron = require('node-cron');
@@ -282,6 +284,30 @@ exports.getFeaturedProducts = (req, res, next) => {
         match :{isDeleted :false}
     })
     .then(resp => res.json(resp));
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Featured Stores                               */
+/* -------------------------------------------------------------------------- */
+
+exports.getFeaturedStores = (req, res, next) => {
+    FeaturedStore.find({})
+    .populate({
+        path: 'store',
+        populate: 'categories',
+        select: 'categories logo title',
+        match :{isDeleted :false}
+    })
+    .then(resp => {
+        console.log('the stores', resp);
+        Promise.all(resp.map(async ({store}) => {
+            console.log('store id', store._id)
+            const page = await StorePage.findOne({store: store._id}).select('coverImage');
+            store.page = page;
+            return Promise.resolve(store);
+        }))
+        .then(resp => res.json(resp));
+    });
 }
 
 

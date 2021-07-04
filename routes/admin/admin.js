@@ -19,6 +19,10 @@ router.delete('/featured-product', adminValidators.adminIsLoggedIn, admin.remove
 router.get('/featured-product', admin.getFeaturedProducts);
 router.post('/featured-product', adminValidators.adminIsLoggedIn, admin.addFeaturedProducts);
 
+router.delete('/featured-store', adminValidators.adminIsLoggedIn, admin.removeFeaturedStores);
+router.get('/featured-store', admin.getFeaturedStores);
+router.post('/featured-store', adminValidators.adminIsLoggedIn, admin.addFeaturedStores);
+
 router.post('/search-products', adminValidators.adminIsLoggedIn, admin.searchProducts);
 
 router.get('/orders/:status', adminValidators.adminIsLoggedIn, admin.getReadyOrders);
@@ -30,6 +34,10 @@ router.get('/refunds/:status', adminValidators.adminIsLoggedIn, admin.getRefunds
 router.put('/refunds/confirm', adminValidators.adminIsLoggedIn, admin.confirmRefund);
 
 router.post('/variables', admin.changeVariables);
+router.post('/cities', admin.addCity);
+router.put('/cities', admin.updateCity);
+router.post('/governates', admin.addGovernate);
+router.put('/governates', admin.updateGovernate);
 
 router.get('/refresh', adminValidators.refreshToken);
 router.post('/', adminValidators.adminIsLoggedIn, admin.createNewAdmin);

@@ -8,8 +8,11 @@ const cors = require('cors');
 const { upload, remove } = require('./s3');
 
 const Variables = require('./models/other/Variables');
-const Client = require('./models/seller/product/Product');
+const Cities = require('./models/other/Cities');
+const Governates = require('./models/other/Governates');
 const {getVariables, changeVariables} = require('./variables');
+const {getCities, changeCities} = require('./cities');
+const {getGovernates, changeGovernates} = require('./governates');
 
 
 require('dotenv').config();
@@ -54,10 +57,9 @@ mongoose.connect(
 )
 .then(async () => {
   console.log('Connection to the database is successful!');
-  Variables.findOne({})
-  .then(resp => {
-    changeVariables(resp);
-  });
+  Variables.findOne({}).then(resp => changeVariables(resp));
+  Cities.find({}).then(resp => changeCities(resp));
+  Governates.find({}).then(resp => changeGovernates(resp));
 });
 
 
@@ -102,6 +104,8 @@ app.post('/api/remove', async (req, res) => {
 });
 
 app.get('/api/variables', (req, res) => res.json(getVariables()));
+app.get('/api/cities', (req, res) => res.json(getCities()));
+app.get('/api/governates', (req, res) => res.json(getGovernates()));
 
 app.use(
   "/api",

@@ -7,6 +7,9 @@ const StoreOrder = require('../../models/orders/StoreOrder');
 const Order = require('../../models/orders/Order');
 const Product = require('../../models/seller/product/Product');
 const WithdrawRequest = require('../../models/seller/WithdrawRequest');
+const Category = require('../../models/categorization/Category');
+const SubCategory = require('../../models/categorization/SubCategory');
+
 
 const cron = require('node-cron');
 
@@ -562,6 +565,24 @@ exports.getPayments = (req, res, next) => {
 const checkArrayNotAll = (array, number) => {
     return array.reduce((elem, next) => elem && (next !== number), true);
 }
+
+exports.getCategory = (req, res, next) => {
+    Category.findOne({$or:[{'name.en': req.body.category},{'name.ar': req.body.category}]})
+    .select('_id')
+    .then( category => {
+        next({status:200,category:category});
+    })
+    .catch(err => next({status: 404, message: err}));
+}
+exports.getSubCategory = (req, res, next) => {
+    SubCategory.findOne({$or:[{'name.en': req.body.subcategory},{'name.ar': req.body.subcategory}]})
+    .select('_id')
+    .then( subcategory => {
+        next({status:200,subcategory:subcategory});
+    })
+    .catch(err => next({status: 404, message: err}));
+}
+
 
 exports.getStoreId = (req, res, next) => {
     Store.findOne({title: req.body.store})

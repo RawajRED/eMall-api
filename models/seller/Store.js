@@ -74,6 +74,10 @@ const storeSchema = new Schema({
         type: Number,
         default: 0
     },
+    daysTillPaid:{
+        type : Number,
+        default : 14
+    },
     isDeleted : {
         type : Boolean,
         default : false

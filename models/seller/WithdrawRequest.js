@@ -14,6 +14,14 @@ const withdrawRequestSchema = new Schema({
     fulfilled: {
         type: Boolean,
         default: false
+    },
+    imageURL : {
+        type : String,
+        default : ""
+    },
+    amount : {
+        type : Number,
+        default : 0 
     }
 }, {timestamps: { createdAt: 'created_at'}});
 

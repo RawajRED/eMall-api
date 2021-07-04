@@ -34,7 +34,7 @@ exports.uploadThumnail = multer({
     },
     s3,
     Bucket: 'emallbucket',
-    acl: 'public-read',
+    ACL: 'public-read',
     resize : {height : 300, width : 400, options :{withoutEnlargement: true,fit: 'inside'}},
     //toFormat : {type : 'jpeg', options :{ quality : 50, mozjpeg : true}},
     metadata(req, file, cb) {

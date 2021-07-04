@@ -11,6 +11,7 @@ router.post('/stores', adminValidators.adminIsLoggedIn, admin.getAllStores);
 router.post('/stores/applying', adminValidators.adminIsLoggedIn, admin.getApplyingStores);
 router.post('/stores/deleted', adminValidators.adminIsLoggedIn, admin.getDeletedStores);
 router.post('/stores/approve', adminValidators.adminIsLoggedIn, admin.approveStore);
+router.get('/stores/credit/:id', adminValidators.adminIsLoggedIn, admin.addPendingCredit);
 router.get('/stores/:id', adminValidators.adminIsLoggedIn, admin.getStoreData);
 router.delete('/stores/:id', adminValidators.adminIsLoggedIn, admin.deleteStore);
 router.put('/stores/revert/:id', adminValidators.adminIsLoggedIn, admin.revertStore);
@@ -42,5 +43,22 @@ router.put('/governates', admin.updateGovernate);
 router.get('/refresh', adminValidators.refreshToken);
 router.post('/', adminValidators.adminIsLoggedIn, admin.createNewAdmin);
 router.get('/', adminValidators.adminVerifyToken);
+
+
+// finance
+router.post('/finance/pending',adminValidators.adminIsLoggedIn, admin.getPendingFunds);
+router.get('/finance/pendingFull', adminValidators.adminIsLoggedIn,admin.getPendingFundsFull);
+router.post('/finance/paid',adminValidators.adminIsLoggedIn, admin.getPaidFunds);
+router.get('/finance/paidFull', adminValidators.adminIsLoggedIn,admin.getPaidFundsFull);
+router.post('/finance/funds',adminValidators.adminIsLoggedIn, admin.getFunds);
+router.get('/finance/fundsFull',adminValidators.adminIsLoggedIn, admin.getFundsFull);
+
+router.get('/finance/store/:id',adminValidators.adminIsLoggedIn, admin.getStoreFunds);
+router.get('/finance/store/withdraws/:id',adminValidators.adminIsLoggedIn, admin.getStoreWithdraws)
+
+router.get('/finance/withdraws',adminValidators.adminIsLoggedIn, admin.getWithdraws)
+router.post('/finance/fulfill-withdraw',adminValidators.adminIsLoggedIn, admin.fulfillWithdrawal)
+
+
 
 module.exports = router;

@@ -11,16 +11,32 @@ const WithdrawRequest = require('../../models/seller/WithdrawRequest');
 const cron = require('node-cron');
 
 cron.schedule('59 23 * * *', () => {
-    StorePayment
-        .find({
-            created_at: {
-                $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1),
-                $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate()) 
-            } 
-        })
+    // StorePayment
+    //     .find({
+    //         created_at: {
+    //             $gte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 14),
+    //             $lte: new Date(date.getFullYear(), date.getMonth(), date.getDate() - 13) 
+    //         } 
+    //     })
+    //     .then(payments => {
+    //         const promises = [];
+    //         payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
+    //         Promise.all(promises).catch(err => console.log(err));
+    //     })
+    console.log('update payments');
+        StorePayment
+        .find({fullfilled:false})
+        .populate({path: 'store', select: 'daysTillPaid'})
         .then(payments => {
             const promises = [];
-            payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
+            payments.forEach(payment => 
+                {
+                    if(payment.created_at <=  new Date(new Date()- payment.store.daysTillPaid * 24 * 60 * 60 * 1000))
+                        {
+                            promises.push(Store.findOneAndUpdate({_id: payment.store.id}, {$inc: {credit: payment.amount}}).exec());
+                            promises.push(StorePayment.findOneAndUpdate({_id: payment._id}, {$set: {fullfilled: true}}).exec());
+                        }
+                });
             Promise.all(promises).catch(err => console.log(err));
         })
 });
@@ -447,6 +463,7 @@ exports.getRevenueForOrder = (req, res, next) => {
 }
 
 exports.getCredit = (req, res, next) => {
+console.log(req.body);
     const store = req.body.store;
     Store.findOne({_id: store._id})
     .select('credit')
@@ -524,7 +541,7 @@ exports.getPendingFunds = (req, res, next) => {
 }
 
 exports.requestWithdrawal = (req, res, next) => {
-    const {store, seller, amount} = req.body;
+    const {store, seller} = req.body;
     WithdrawRequest.findOneAndUpdate(
         {store: store._id, seller: seller._id, fulfilled: false},
         {store: store._id, seller: seller._id},
@@ -544,4 +561,13 @@ exports.getPayments = (req, res, next) => {
 
 const checkArrayNotAll = (array, number) => {
     return array.reduce((elem, next) => elem && (next !== number), true);
+}
+
+exports.getStoreId = (req, res, next) => {
+    Store.findOne({title: req.body.store})
+    .select('_id categories')
+    .then( store => {
+        next({status:200,store:store});
+    })
+    .catch(err => next({status: 404, message: err}));
 }

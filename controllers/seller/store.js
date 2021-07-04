@@ -431,6 +431,7 @@ exports.getRevenueForOrder = (req, res, next) => {
 }
 
 exports.getCredit = (req, res, next) => {
+console.log(req.body);
     const store = req.body.store;
     Store.findOne({_id: store._id})
     .select('credit')
@@ -530,7 +531,6 @@ const checkArrayNotAll = (array, number) => {
     return array.reduce((elem, next) => elem && (next !== number), true);
 }
 
-
 exports.getCategory = (req, res, next) => {
     Category.findOne({$or:[{'name.en': req.body.category},{'name.ar': req.body.category}]})
     .select('_id')
@@ -547,6 +547,7 @@ exports.getSubCategory = (req, res, next) => {
     })
     .catch(err => next({status: 404, message: err}));
 }
+
 
 exports.getStoreId = (req, res, next) => {
     Store.findOne({title: req.body.store})

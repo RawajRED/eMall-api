@@ -30,7 +30,7 @@ router.get('/featured-products', cache.route(), advertisement.getFeaturedProduct
 router.get('/featured-stores', cache.route(), advertisement.getFeaturedStores);
 
 // * Main Ads
-router.get('/main', cache.route(), advertisement.getMainAds);
+router.get('/main', advertisement.getMainAds);
 router.post('/main', advertisement.createMainAd);
 
 module.exports = router;

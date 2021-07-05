@@ -35,7 +35,6 @@ exports.clientRegisterPhone = (req, res, next) => {
             };
             Client.create(client)
             .then(resp => {
-                console.log('im resp', resp)
                 return resp.toJSON();
             })
             .then(resp => {
@@ -213,7 +212,6 @@ exports.clientVerifyOtp = async (req, res, next) => {
     //     .populate('cart');
     //     client.otp = null;
     //     client.verified = true;
-    //     console.log('client', client);
     //     client.save();
     //     delete client.password;
     //     const token = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});

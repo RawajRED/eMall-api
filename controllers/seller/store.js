@@ -26,7 +26,6 @@ cron.schedule('59 23 * * *', () => {
     //         payments.forEach(payment => promises.push(Store.findOneAndUpdate({_id: payment.store}, {$inc: {credit: payment.amount}}).exec()));
     //         Promise.all(promises).catch(err => console.log(err));
     //     })
-    console.log('update payments');
         StorePayment
         .find({fullfilled:false})
         .populate({path: 'store', select: 'daysTillPaid'})
@@ -137,7 +136,6 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 exports.getStoreProductsByCategoryFull = (req, res, next) => {
     const category = req.body.category;
     const match = {categories: category, isDeleted: false, title: {$regex: req.body.search, $options: "i"}};
-    console.log(match)
     Store.find(match)
     .select('title description categories products logo reviews')
     .sort('title')
@@ -241,7 +239,6 @@ exports.getSimilarStores = (req, res, next) => {
 
 exports.findStore = (req, res, next) => {
     const criteria = req.body.criteria;
-    console.log('getting stores', criteria)
     Store.find({isDeleted: false, title: {$regex: criteria, $options: "i"}})
     .select('title description categories logo reviews')
     .sort('title')
@@ -253,7 +250,6 @@ exports.findStore = (req, res, next) => {
         select: 'stars'
     })
     .then(async stores => {
-        console.log(stores)
         const _stores = stores.map(async store => {
             const match = {store, isDeleted:false, isStoreDeleted: false}
             store.products = await Product.find(match)
@@ -466,7 +462,6 @@ exports.getRevenueForOrder = (req, res, next) => {
 }
 
 exports.getCredit = (req, res, next) => {
-console.log(req.body);
     const store = req.body.store;
     Store.findOne({_id: store._id})
     .select('credit')

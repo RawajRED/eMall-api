@@ -299,14 +299,15 @@ exports.getFeaturedStores = (req, res, next) => {
         match :{isDeleted :false}
     })
     .then(resp => {
-        console.log('the stores', resp);
-        Promise.all(resp.map(async ({store}) => {
-            console.log('store id', store._id)
-            const page = await StorePage.findOne({store: store._id}).select('coverImage');
-            store.page = page;
-            return Promise.resolve(store);
-        }))
-        .then(resp => res.json(resp));
+        res.json(resp);
+        // console.log('the stores', resp);
+        // Promise.all(resp.map(async ({store}) => {
+        //     console.log('store id', store._id)
+        //     const page = await StorePage.findOne({store: store._id}).select('coverImage');
+        //     store.page = page;
+        //     return Promise.resolve(store);
+        // }))
+        // .then(resp => res.json(resp));
     });
 }
 

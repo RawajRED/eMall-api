@@ -8,4 +8,4 @@ exports.cacheByValue = (title = 'id', value, body = true, expire = 60) => [
     cache.route({expire})
 ]
 
-exports.cache = (expire) => cache.route({expire});
+exports.cache = expire => cache.route({expire});

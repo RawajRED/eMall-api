@@ -239,6 +239,18 @@ exports.changeStoreOrderStatus = (req, res, next) => {
     .catch(err => next(err));
 }
 
+exports.cancelOrder = (req, res, next) => {
+    const order = req.body.order;
+    Order.findOneAndUpdate({ _id: order._id}, {status: -1}, {new: true})
+    .then(resp => {
+        StoreOrder.findOneAndUpdate({code: resp.code}, {status: -1}, {new: true})
+        .then(resp => {
+            res.json(resp)
+        })
+    })
+    .catch(err => next(err))
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                   REFUNDS                                  */
 /* -------------------------------------------------------------------------- */

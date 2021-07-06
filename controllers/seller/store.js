@@ -437,6 +437,8 @@ exports.updateOrderStatus = (req, res, next) => {
     .catch(err => next(err));
 }
 
+
+
 exports.getRevenueForOrder = (req, res, next) => {
     const store = req.body.store;
     StoreOrder.findOne({store: store._id, _id: req.body.order})

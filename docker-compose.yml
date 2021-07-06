@@ -1,0 +1,10 @@
+version: '3'
+services:
+  redis: 
+    image: 'redis'
+  emall-api:
+    build: .
+    ports:
+      - "80:80"
+    links:
+        - redis:redis

@@ -4,15 +4,14 @@ const product = require('../../../controllers/seller/product/product');
 const productVariant = require('../../../controllers/seller/product/productVariant');
 const { authenticateSeller } = require('../../../validators/seller/sellerValidator');
 const { validateAddProduct } = require('../../../validators/product/productValidator');
-
-const cache = require('express-redis-cache')({expire: 180});
+const { cacheByValue, cache } = require('../../../middlewares/redis');
 
 router.post('/similar-products', product.getSimilarProducts);
 router.post('/more-from-seller', product.getMoreFromSeller);
-router.get('/deals', cache.route(), product.getDeals);
+router.get('/deals', cache(180), product.getDeals);
 router.get('/reviews/:product', product.getReviews);
 
-router.get('/store/:id', product.getStoreProducts);
+router.get('/store/:id',  product.getStoreProducts);
 router.get('/product-variant/:id', productVariant.getVariant);
 router.post('/variant', authenticateSeller, productVariant.createProductVariant);
 router.put('/variant', authenticateSeller, productVariant.updateProductVariant);
@@ -35,6 +34,6 @@ router.put('/options/update-param', authenticateSeller, product.updateProductOpt
 router.put('/', authenticateSeller, validateAddProduct, product.updateProduct);
 router.delete('/', product.deleteProduct);
 
-router.get('/:id', product.getProductById);
+router.get('/:id', cacheByValue('product', 'id', false, 1000),product.getProductById);
 
 module.exports = router;

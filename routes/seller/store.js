@@ -44,7 +44,7 @@ router.get('/pending-funds', authenticateSeller, store.getPendingFunds);
 router.get('/payments', authenticateSeller, store.getPayments);
 router.post('/request-withdrawal', authenticateSeller, store.requestWithdrawal);
 
-router.get('/:id', store.getStore);
+router.get('/:id',cacheByValue('store', 'id', false, 1000), store.getStore);
 router.post('/', store.createStore);
 router.put('/', store.updateStore);
 

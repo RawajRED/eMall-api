@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const advertisement = require('../controllers/advertisement');
+const { cache } = require('../middlewares/redis');
 const { authenticateSeller } = require('../validators/seller/sellerValidator');
-const cache = require('express-redis-cache')({expire: 3600})
 
 // * Home Ads
-router.get('/home', cache.route(), advertisement.getHomeAds);
+router.get('/home', cache(3600), advertisement.getHomeAds);
 router.get('/home/current/:page', advertisement.getCurrentHomeAd);
 router.get('/home/bid/:page', advertisement.getHighestBidder);
 router.post('/home', advertisement.createHomeAd);
@@ -18,16 +18,16 @@ router.post('/banner', authenticateSeller, advertisement.createBannerAd);
 router.put('/banner', authenticateSeller, advertisement.updateBannerAd);
 
 //  * Deal of the Day
-router.get('/dealsoftheday', cache.route(), advertisement.getDealsOfTheDay);
-router.get('/dealsoftheday/full', cache.route(), advertisement.getFullDealsOfTheDay);
+router.get('/dealsoftheday', cache(3600), advertisement.getDealsOfTheDay);
+router.get('/dealsoftheday/full', cache(3600), advertisement.getFullDealsOfTheDay);
 router.get('/dealsoftheday/own', authenticateSeller, advertisement.getOwnDealsOfTheDay);
 router.post('/dealsoftheday', authenticateSeller, advertisement.createDealOfTheDay);
 
 // * Featured Products
-router.get('/featured-products', cache.route(), advertisement.getFeaturedProducts);
+router.get('/featured-products', cache(180), advertisement.getFeaturedProducts);
 
 // * Featured Stores
-router.get('/featured-stores', cache.route(), advertisement.getFeaturedStores);
+router.get('/featured-stores', cache(3600), advertisement.getFeaturedStores);
 
 // * Main Ads
 router.get('/main', advertisement.getMainAds);

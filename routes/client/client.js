@@ -8,7 +8,7 @@ const clientValidators = require('../../validators/client/clientValidator');
 router.get('/cart', clientValidators.clientIsLoggedIn, client.getClientCart);
 router.post('/cart', clientValidators.clientIsLoggedIn, client.addToCart);
 router.put('/cart', clientValidators.clientIsLoggedIn, client.updateCart);
-router.delete('/cart', clientValidators.clientIsLoggedIn, client.removeFromCart)
+router.delete('/cart/:code', clientValidators.clientIsLoggedIn, client.removeFromCart)
 
 
 // ? WISHLIST

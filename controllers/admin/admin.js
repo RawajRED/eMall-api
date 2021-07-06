@@ -20,11 +20,12 @@ const { changeCities } = require('../../cities');
 const { changeGovernates } = require('../../governates');
 
 exports.adminLoginEmail = (req, res, next) => {
-    Admin.findOne({email: req.body.email})
+    Admin.findOne({email: req.body.email}).select('+password')
     .then(admin => {
         if(admin){
             bcrypt.compare(req.body.password, admin.password, (err, result) => {
                 delete admin.password;
+                console.log(admin);
                 if(err)
                     res.sendStatus(500);
                 if(result){
@@ -199,6 +200,43 @@ exports.wipeOrders = (req, res, next) => {
         StoreOrder.deleteMany({})
         .then(() => res.json({resp: 'Bye Bye Orders :('}))
     })
+}
+
+exports.getFullOrder = (req, res, next) => {
+    Order.findOne({_id: req.params.id})
+    .populate({path: 'storeOrders', populate: 'store orders.product'})
+    .populate({path: 'client', select: 'firstName lastName phone email'})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Store Orders                                */
+/* -------------------------------------------------------------------------- */
+
+exports.changeStoreOrderStatus = (req, res, next) => {
+    StoreOrder.findOneAndUpdate({_id: req.params.id}, {status: req.body.status}, {new: true})
+    .then(storeOrder => {
+        console.log(storeOrder)
+        Order.findOne({storeOrders: req.params.id})
+        .populate({path: 'storeOrders', populate: 'store orders.product'})
+        .populate({path: 'client', select: 'firstName lastName phone email'})
+        .then(order => {
+            if(checkArrayNotAll(order.storeOrders.map(ord => ord.status), 0)){
+                if(!checkArrayNotAll(order.storeOrders.map(ord => ord.status), -1)){
+                    // ! CANCEL ENTIRE ORDER
+                    order.status = -1;
+                    order.save();
+                } else {
+                    order.status = 1;
+                    order.save();
+                }
+            }
+            res.json(order);
+        })
+        .catch(err => next(err));
+    })
+    .catch(err => next(err));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -546,4 +584,9 @@ exports.fulfillWithdrawal = (req, res, next) => {
         }
 
     })
+}
+
+
+const checkArrayNotAll = (array, number) => {
+    return array.reduce((elem, next) => elem && (next !== number), true);
 }

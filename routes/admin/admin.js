@@ -26,10 +26,13 @@ router.post('/featured-store', adminValidators.adminIsLoggedIn, admin.addFeature
 
 router.post('/search-products', adminValidators.adminIsLoggedIn, admin.searchProducts);
 
-router.get('/orders/:status', adminValidators.adminIsLoggedIn, admin.getReadyOrders);
 router.put('/orders/status', adminValidators.adminIsLoggedIn, admin.changeOrderStatus);
+router.get('/orders/status/:status', adminValidators.adminIsLoggedIn, admin.getReadyOrders);
 router.post('/orders/fulfill', adminValidators.adminIsLoggedIn, admin.fulfillPayment);
 router.delete('/orders/wipe', adminValidators.adminIsLoggedIn, admin.wipeOrders);
+router.get('/orders/:id', adminValidators.adminIsLoggedIn, admin.getFullOrder);
+
+router.put('/store-order/status/:id', adminValidators.adminIsLoggedIn, admin.changeStoreOrderStatus)
 
 router.get('/refunds/:status', adminValidators.adminIsLoggedIn, admin.getRefunds);
 router.put('/refunds/confirm', adminValidators.adminIsLoggedIn, admin.confirmRefund);

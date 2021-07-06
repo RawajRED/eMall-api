@@ -64,6 +64,7 @@ exports.getStore = (req, res, next) => {
 }
 
 exports.getStorePage = (req, res, next) => {
+    console.log('getting store page')
     StorePage.findOne({store: req.params.id})
     .populate('homeAds.product')
     .then(resp => res.json(resp))

@@ -501,8 +501,8 @@ exports.updateCart = (req, res, next) => {
 */
 exports.removeFromCart = (req, res, next) => {
     const client = req.body.client;
-    const product = req.body.product;
-    const code = product.code
+    console.log(client, req.body);
+    const code = req.params.code;
     Cart.findOne({client})
     .then(async cart => {
         cart.products = cart.products.filter(product => product.code !== code);

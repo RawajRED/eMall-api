@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const subcategories = require('../../controllers/categorization/subcategories');
 const { cacheByValue } = require('../../middlewares/redis');
-const cache = require('express-redis-cache')({expire: 3600})
+const cache = require('express-redis-cache')({host:'redis',port:6379,expire: 3600})
 
 router.get('/filters/:subcategory', subcategories.getFilters);
 router.get('/filters', cache.route(), subcategories.getAllFilters);

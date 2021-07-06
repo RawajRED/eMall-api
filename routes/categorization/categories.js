@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const categories = require('../../controllers/categorization/categories');
 const { validateCategoryCreate } = require('../../validators/categorization/categoryValidator');
-const cache = require('express-redis-cache')({expire: 3600})
+const cache = require('express-redis-cache')({host:'redis',port:6379,expire: 3600})
 
 router.get('/', cache.route(), categories.getCategories);
 router.post('/multiple', categories.createCategory);

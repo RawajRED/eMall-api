@@ -1,4 +1,4 @@
-const cache = require ('express-redis-cache')();
+const cache = require ('express-redis-cache')({host:'redis', port:6379});
 
 exports.cacheByValue = (title = 'id', value, body = true, expire = 60) => [
     (req, res, next) => {

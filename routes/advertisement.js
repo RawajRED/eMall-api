@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const advertisement = require('../controllers/advertisement');
 const { authenticateSeller } = require('../validators/seller/sellerValidator');
-const cache = require('express-redis-cache')({expire: 3600})
+const cache = require('express-redis-cache')({host:'redis',port:6379,expire: 3600})
 
 // * Home Ads
 router.get('/home', cache.route(), advertisement.getHomeAds);

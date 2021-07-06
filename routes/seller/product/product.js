@@ -5,7 +5,7 @@ const productVariant = require('../../../controllers/seller/product/productVaria
 const { authenticateSeller } = require('../../../validators/seller/sellerValidator');
 const { validateAddProduct } = require('../../../validators/product/productValidator');
 
-const cache = require('express-redis-cache')({expire: 180});
+const cache = require('express-redis-cache')({host:'redis',port:6379,expire: 180});
 
 router.post('/similar-products', product.getSimilarProducts);
 router.post('/more-from-seller', product.getMoreFromSeller);

@@ -1,6 +1,6 @@
 FROM node:16
 
-WORKDIR /home/salem/eMall-api
+WORKDIR /home/ubuntu/eMall-api
 
 COPY package*.json ./
 

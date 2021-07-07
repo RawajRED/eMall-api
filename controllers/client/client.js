@@ -790,8 +790,8 @@ exports.requestRefund = (req, res, next) => {
 /* -------------------------------------------------------------------------- */
 
 
-// const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
-const generateOtp = (number = 5) => '1234567890'.substr(0, number);
+const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
+// const generateOtp = (number = 5) => '1234567890'.substr(0, number);
 
 const generateAlphaNumericOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
 

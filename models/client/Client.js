@@ -23,7 +23,11 @@ const clientSchema = new Schema({
         unique: true
     },
     resetOtp: String,
-    email: String,
+    email: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
     image: String,
     verified: {
         type: Boolean,

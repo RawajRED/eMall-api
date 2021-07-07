@@ -111,23 +111,22 @@ const clientSchema = new Schema({
     }]
 });
 
-// TODO: Fix this shit
-clientSchema.pre('save', function(next){
-    Cart.create({client: this._id})
-    .then(resp => resp.toJSON())
-    .then((cart) => {
-        Wishlist.create({client: this._id})
-        .then(resp => resp.toJSON())
-        .then(wishlist => {
-            this.cart = cart._id;
-            this.wishlist = wishlist._id;
-            next();
-        })
-        .catch(err => next(err))
-    }
-    )
-    .catch(err => next(err))
-});
+// clientSchema.pre('save', function(next){
+//     Cart.create({client: this._id})
+//     .then(resp => resp.toJSON())
+//     .then((cart) => {
+//         Wishlist.create({client: this._id})
+//         .then(resp => resp.toJSON())
+//         .then(wishlist => {
+//             this.cart = cart._id;
+//             this.wishlist = wishlist._id;
+//             next();
+//         })
+//         .catch(err => next(err))
+//     }
+//     )
+//     .catch(err => next(err))
+// });
 
 clientSchema.post('remove', function(doc){
     const promises = [];

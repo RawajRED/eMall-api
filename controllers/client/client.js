@@ -226,10 +226,15 @@ exports.clientVerifyOtp = async (req, res, next) => {
         }
     })
     .populate('cart')
-    .then(client => {
+    .then(async client => {
         if(!client){
             return next({status: 400, message: 'Incorrect PIN'})
         } else {
+            const cart = await Cart.create({client: client._id});
+            const wishlist = await Wishlist.create({client: client._id});
+            client.cart = cart;
+            client.wishlist = wishlist;
+            client.save();
             delete client.password;
             const accessToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '90d'});
             const refreshToken = jwt.sign({ client }, req.app.get('secret_key'), { expiresIn: '365d'});

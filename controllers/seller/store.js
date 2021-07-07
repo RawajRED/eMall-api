@@ -64,7 +64,6 @@ exports.getStore = (req, res, next) => {
 }
 
 exports.getStorePage = (req, res, next) => {
-    console.log('getting store page')
     StorePage.findOne({store: req.params.id})
     .populate('homeAds.product')
     .then(resp => res.json(resp))
@@ -409,28 +408,64 @@ exports.getReviewsOverview = (req, res, next) => {
 }
 
 exports.updateOrderStatus = (req, res, next) => {
-    const store = req.body.store;
     StoreOrder.findOneAndUpdate({_id: req.body.order, status: {$lte: 1, $gt: -1}}, {status: req.body.status})
     .then(() => {
-        StoreOrder.find({store: store._id})
-        .sort('status')
-        .populate('orders.product')
-        .then(resp => {
-            res.json(resp);
-            Order.findOne({storeOrders: req.body.order})
-            .populate('storeOrders')
-            .then(order => {
-                if(checkArrayNotAll(order.storeOrders.map(ord => ord.status), 0)){
-                    if(!checkArrayNotAll(order.storeOrders.map(ord => ord.status), -1)){
-                        // ! CANCEL ENTIRE ORDER
-                        order.status = -1;
-                        order.save();
-                    } else {
-                        order.status = 1;
-                        order.save();
-                    }
+        res.sendStatus(200);
+        Order.findOne({storeOrders: req.body.order})
+        .populate({path: 'storeOrders', populate: 'product'})
+        .then(order => {
+            if(checkArrayNotAll(order.storeOrders.map(ord => ord.status), 0)){
+                if(!checkArrayNotAll(order.storeOrders.map(ord => ord.status), -1)){
+                    // ! CANCEL ENTIRE ORDER
+                    order.status = -1;
+                    order.save();
+                } else {
+                    order.status = 1;
+                    order.save();
                 }
+            }
+        })
+        .catch(err => next(err));
+    })
+    .catch(err => next(err));
+}
+
+exports.cancelOrder = (req, res, next) => {
+    console.log('bruh', req.body.order)
+    StoreOrder.findOneAndUpdate({_id: req.body.order}, {status: -1})
+    .then(() => {
+        console.log('getting your shit')
+        Order.findOne({storeOrders: req.body.order})
+        .populate({path: 'storeOrders', populate: 'orders.product'})
+        .then(order => {
+            order.storeOrders = order.storeOrders.filter(storeOrder => storeOrder._id.toString() !== order._id.toString());
+            
+            let total = 0;
+            order.storeOrders.map(storeOrder => {
+                storeOrder.orders.forEach(order => {
+                    const product = order.product;
+                    let price = product.price;
+                    console.log('price', order)
+                    product.options.map(option => {
+                        const pickedOption = order.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
+                        const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
+                        price += pick.extraPrice || 0;
+                    });
+                    total += price * (1 - ((order.discount || 0))) * (1 - ((order.dealOfTheDay || 0) / 100));
+                })
             })
+            console.log('total is', total)
+            order.total -= total;
+            if(checkArrayNotAll(order.storeOrders.map(ord => ord.status), 0)){
+                if(!checkArrayNotAll(order.storeOrders.map(ord => ord.status), -1)){
+                    // ! CANCEL ENTIRE ORDER
+                    order.status = -1;
+                } else {
+                    order.status = 1;
+                }
+            }
+            order.save();
+            res.sendStatus(200);
         })
         .catch(err => next(err));
     })

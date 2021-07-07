@@ -32,7 +32,7 @@ router.post('/orders/fulfill', adminValidators.adminIsLoggedIn, admin.fulfillPay
 router.delete('/orders/wipe', adminValidators.adminIsLoggedIn, admin.wipeOrders);
 router.get('/orders/:id', adminValidators.adminIsLoggedIn, admin.getFullOrder);
 
-router.put('/store-order/status/:id', adminValidators.adminIsLoggedIn, admin.changeStoreOrderStatus)
+router.put('/store-order/status/:id', adminValidators.adminIsLoggedIn, admin.changeStoreOrderStatus);
 
 router.get('/refunds/:status', adminValidators.adminIsLoggedIn, admin.getRefunds);
 router.put('/refunds/confirm', adminValidators.adminIsLoggedIn, admin.confirmRefund);
@@ -57,10 +57,10 @@ router.post('/finance/funds',adminValidators.adminIsLoggedIn, admin.getFunds);
 router.get('/finance/fundsFull',adminValidators.adminIsLoggedIn, admin.getFundsFull);
 
 router.get('/finance/store/:id',adminValidators.adminIsLoggedIn, admin.getStoreFunds);
-router.get('/finance/store/withdraws/:id',adminValidators.adminIsLoggedIn, admin.getStoreWithdraws)
+router.get('/finance/store/withdraws/:id',adminValidators.adminIsLoggedIn, admin.getStoreWithdraws);
 
-router.get('/finance/withdraws',adminValidators.adminIsLoggedIn, admin.getWithdraws)
-router.post('/finance/fulfill-withdraw',adminValidators.adminIsLoggedIn, admin.fulfillWithdrawal)
+router.get('/finance/withdraws',adminValidators.adminIsLoggedIn, admin.getWithdraws);
+router.post('/finance/fulfill-withdraw',adminValidators.adminIsLoggedIn, admin.fulfillWithdrawal);
 
 
 

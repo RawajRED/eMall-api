@@ -18,8 +18,9 @@ router.post('/find-by-subcategory/full', cacheByValue('store', 'subcategory', tr
 router.post('/find-similar-stores', store.getSimilarStores);
 router.post('/search', store.findStore);
 
-router.get('/orders', authenticateSeller, store.getOrders);
+router.get('/order/:status', authenticateSeller, store.getOrders);
 router.put('/order/status', authenticateSeller, store.updateOrderStatus);
+router.put('/order/cancel', authenticateSeller, store.cancelOrder);
 router.post('/order-revenue', authenticateSeller, store.getRevenueForOrder);
 
 router.get('/own-products/:search*?', authenticateSeller, store.getOwnProducts);

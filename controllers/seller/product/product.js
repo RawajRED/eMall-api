@@ -78,10 +78,12 @@ exports.findByCategoryFull = (req, res ,next) => {
             "title.ar": {$regex: req.body.search, $options: "i"}
         }
     ]};
+    console.log('skipping', req.body.skip)
     if(req.body.filter)
         match.filter = req.body.filter;
     Product.find(match)
     .skip(req.body.skip)
+    .limit(20)
     .populate('dealOfTheDay')
     .then(products => res.json(products))
     .catch(err => next(err)); 
@@ -113,6 +115,7 @@ exports.findBySubcategoryFull = (req, res, next) => {
         match.filter = req.body.filter;
     Product.find(match)
     .skip(req.body.skip)
+    .limit(20)
     .populate('dealOfTheDay')
     .then(products => res.json(products))
     .catch(err => next(err)); 

@@ -138,10 +138,12 @@ exports.getStoreProductsByCategory = (req, res, next) => {
 exports.getStoreProductsByCategoryFull = (req, res, next) => {
     const category = req.body.category;
     const match = {categories: category, isDeleted: false, title: {$regex: req.body.search, $options: "i"}};
+    console.log('skipping', req.body)
     Store.find(match)
     .select('title description categories products logo reviews')
     .sort('title')
     .skip(req.body.skip)
+    .limit(10)
     .populate('categories')
     .populate({
         path: 'reviews',
@@ -158,6 +160,7 @@ exports.getStoreProductsByCategoryFull = (req, res, next) => {
             return store;
         })
         Promise.all(_stores).then(resp => {
+            console.log(resp)
             res.json(resp)
         });
         // await res.json(_stores)
@@ -202,7 +205,7 @@ exports.getStoreProductsBySubcategoryFull = (req, res, next) => {
     Store.find({categories: category, isDeleted: false})
     .select('title description categories logo reviews')
     .sort('title')
-    .limit(4)
+    .limit(10)
     .skip(req.body.skip)
     .populate('categories')
     .populate({

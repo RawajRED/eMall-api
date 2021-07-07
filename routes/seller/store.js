@@ -12,9 +12,9 @@ router.post('/category_ID', store.getCategory);
 router.post('/subcategory_ID', store.getSubCategory);
 
 router.post('/find-by-category', cacheByValue('store', 'category', true, 60), store.getStoreProductsByCategory);
-router.post('/find-by-category/full', cacheByValue('store', 'category', true, 60), store.getStoreProductsByCategoryFull);
+router.post('/find-by-category/full', store.getStoreProductsByCategoryFull);
 router.post('/find-by-subcategory', cacheByValue('store', 'subcategory', true, 60), store.getStoreProductsBySubcategory);
-router.post('/find-by-subcategory/full', cacheByValue('store', 'subcategory', true, 60), store.getStoreProductsBySubcategoryFull);
+router.post('/find-by-subcategory/full', store.getStoreProductsBySubcategoryFull);
 router.post('/find-similar-stores', store.getSimilarStores);
 router.post('/search', store.findStore);
 

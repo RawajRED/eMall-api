@@ -132,7 +132,6 @@ exports.clientLoginPhone = (req, res, next) => {
                     if(client.verified){
                         const accessToken = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '90d'});
                         const refreshToken = jwt.sign({ client: client._id }, req.app.get('secret_key'), { expiresIn: '365d'});
-                        console.log({client, accessToken, refreshToken, type: 'client'})
                         return res.json({client, accessToken, refreshToken, type: 'client'})
                     }
                     else {
@@ -423,7 +422,6 @@ exports.clientTotal = (req, res, next) => {
 */
 exports.getClientCart = (req, res, next) => {
     const client = req.body.client;
-    console.log(client)
     Cart.findOne({client})
     .populate({
         path: 'products.product',
@@ -503,7 +501,6 @@ exports.updateCart = (req, res, next) => {
 */
 exports.removeFromCart = (req, res, next) => {
     const client = req.body.client;
-    console.log(client, req.body);
     const code = req.params.code;
     Cart.findOne({client})
     .then(async cart => {

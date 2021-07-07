@@ -92,7 +92,6 @@ exports.checkPhone = [
 
 exports.clientIsLoggedIn = (req, res, next) => {
     const token = req.get('Authorization') || req.get('token');
-    console.log(token);
     jwt.verify(token, req.app.get('secret_key'), (err, decoded) => {
         if(err){
             return next({status: 401, message: 'Invalid Token'})

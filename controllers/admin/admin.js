@@ -26,7 +26,6 @@ exports.adminLoginEmail = (req, res, next) => {
         if(admin){
             bcrypt.compare(req.body.password, admin.password, (err, result) => {
                 delete admin.password;
-                console.log(admin);
                 if(err)
                     res.sendStatus(500);
                 if(result){
@@ -230,7 +229,6 @@ exports.getFullOrder = (req, res, next) => {
 exports.changeStoreOrderStatus = (req, res, next) => {
     StoreOrder.findOneAndUpdate({_id: req.params.id}, {status: req.body.status}, {new: true})
     .then(storeOrder => {
-        console.log(storeOrder)
         Order.findOne({storeOrders: req.params.id})
         .populate({path: 'storeOrders', populate: 'store orders.product'})
         .populate({path: 'client', select: 'firstName lastName phone email'})
@@ -264,7 +262,6 @@ exports.cancelStoreOrder = (req, res, next) => {
             const filter = order.storeOrders.filter(storeOrder => (storeOrder.store.toString() !== req.body.storeId.toString()) && (storeOrder.status > -1));
             
             let total = getVariables().shipping;
-            console.log('filter', filter, 'total', total)
             filter.forEach(storeOrder => {
                 storeOrder.orders.forEach(order => {
                     const product = order.product;
@@ -278,7 +275,6 @@ exports.cancelStoreOrder = (req, res, next) => {
                 })
             })
             order.total = total;
-            console.log('new order total', total)
             message = order.client.languagePref === 0 ? 
             `The store ${_SO.store?.title} has rejected your order, your new total is now ${total} EGP. \nPlease check your current order from the "My Orders" tab`
             :
@@ -462,7 +458,6 @@ exports.searchProducts = (req, res, next) => {
 
 exports.searchStores = (req, res, next) => {
     const criteria = req.body.search || '';
-    console.log('getting stores', criteria)
     Store.find({isDeleted: false, title: {$regex: criteria, $options: "i"}})
     .then(resp => res.json(resp))
     .catch(err => next(err));

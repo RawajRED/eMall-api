@@ -20,7 +20,7 @@ exports.clientRegisterPhone = (req, res, next) => {
     const saltRounds = 10;
     const otp = generateOtp(5);
     // TODO: Revert this
-    const phone = normalizePhone('+201140008042' || req.body.phone);
+    const phone = normalizePhone(req.body.phone);
     bcrypt.hash(password, saltRounds, (errPass, hashPass) => {
         // bcrypt.hash(otp, saltRounds, (errOTP, hashOTP) => {
             

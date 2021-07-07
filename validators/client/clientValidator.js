@@ -98,7 +98,6 @@ exports.clientIsLoggedIn = (req, res, next) => {
             return next({status: 401, message: 'Invalid Token'})
         }
         else{
-            console.log(decoded)
             req.body.client = decoded.client;
             next();
         }

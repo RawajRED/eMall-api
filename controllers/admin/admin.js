@@ -15,9 +15,10 @@ const Cities = require('../../models/other/Cities');
 const Governate = require('../../models/other/Governates');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { changeVariables } = require('../../variables');
+const { changeVariables, getVariables } = require('../../variables');
 const { changeCities } = require('../../cities');
 const { changeGovernates } = require('../../governates');
+const { sendMessage } = require('../../twilio');
 
 exports.adminLoginEmail = (req, res, next) => {
     Admin.findOne({email: req.body.email}).select('+password')
@@ -158,6 +159,18 @@ exports.changeOrderStatus = (req, res, next) => {
         .catch(err => next(err));
 }
 
+exports.cancelOrder = (req, res, next) => {
+    const _id = req.body.id;
+    Order.findOneAndUpdate({_id}, {status: -1}, {new: true})
+    .then(resp => {
+        StoreOrder.findOneAndUpdate({code: resp.code}, {status: -1}, {new: true})
+        .then(resp => {
+            res.json(resp)
+        })
+    })
+    .catch(err => next(err))
+}
+
 exports.fulfillPayment = async (req, res, next) => {
     const order = await Order.findOne({_id: req.body.id}).populate({path: 'storeOrders', populate: 'orders.product'});
     order.status = 5;
@@ -233,6 +246,60 @@ exports.changeStoreOrderStatus = (req, res, next) => {
                 }
             }
             res.json(order);
+        })
+        .catch(err => next(err));
+    })
+    .catch(err => next(err));
+}
+
+exports.cancelStoreOrder = (req, res, next) => {
+    StoreOrder.findOneAndUpdate({_id: req.body.order}, {status: -1}, {new: true})
+    .populate('store')
+    .then(_SO => {
+        Order.findOne({storeOrders: req.body.order})
+        .populate('client')
+        .populate({path: 'storeOrders', populate: 'orders.product'})
+        .then(order => {
+            let message = '';
+            const filter = order.storeOrders.filter(storeOrder => (storeOrder.store.toString() !== req.body.storeId.toString()) && (storeOrder.status > -1));
+            
+            let total = getVariables().shipping;
+            console.log('filter', filter, 'total', total)
+            filter.forEach(storeOrder => {
+                storeOrder.orders.forEach(order => {
+                    const product = order.product;
+                    let price = product.price;
+                    product.options.map(option => {
+                        const pickedOption = order.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
+                        const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
+                        price += pick.extraPrice || 0;
+                    });
+                    total += price * order.quantity * (1 - ((order.discount || 0))) * (1 - ((order.dealOfTheDay || 0) / 100));
+                })
+            })
+            order.total = total;
+            console.log('new order total', total)
+            message = order.client.languagePref === 0 ? 
+            `The store ${_SO.store?.title} has rejected your order, your new total is now ${total} EGP. \nPlease check your current order from the "My Orders" tab`
+            :
+            `رفض المتجر ${_SO.store?.title} طلبك،\n إجمالي المبلغ الجديد هو الآن ${total}\n جنيه مصري. يرجى التحقق من طلبك الحالي من خلال "طلباتي"`;
+            if(checkArrayNotAll(order.storeOrders.map(ord => ord.status), 0)){
+                if(!checkArrayNotAll(order.storeOrders.map(ord => ord.status), -1)){
+                    // ! CANCEL ENTIRE ORDER
+                    message = order.client.languagePref === 0 ?
+                    `The store ${_SO.store?.title} has rejected your order.\n Your order #${order.code} has been cancelled since there is nothing else to be delivered`:
+                    `\nرفض المتجر ${_SO.store?.title} طلبك.\n تم إلغاء طلبك \n#${order.code}\n لأنه لا يوجد شيء آخر ليتم تسليمه`
+                    order.status = -1;
+                } else {
+                    order.status = 1;
+                }
+            }
+            sendMessage(message, order.client.phone)
+            .then(() => {
+                order.save();
+                res.sendStatus(200);
+            })
+            .catch(err => next(err));
         })
         .catch(err => next(err));
     })
@@ -361,19 +428,19 @@ exports.removeFeaturedProduct = (req, res, next) => {
 
 exports.getFeaturedStores = (req, res, next) => {
     FeaturedStore.find({})
-    .populate('categories')
+    .populate('store categories')
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
 
 exports.addFeaturedStores = (req, res ,next) => {
-    FeaturedStore.create(req.body)
+    FeaturedStore.create(req.body.stores.map(store => ({store})))
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
 
 exports.removeFeaturedStores = (req, res, next) => {
-    FeaturedStore.findOneAndDelete({_id: req.body.store})
+    FeaturedStore.findOneAndDelete({_id: req.query.id})
     .then(resp => res.json(resp))
     .catch(err => next(err));
 }
@@ -391,6 +458,24 @@ exports.searchProducts = (req, res, next) => {
     .populate('store')
     .then(resp => res.json(resp))
     .catch(err => next(err));
+}
+
+exports.searchStores = (req, res, next) => {
+    const criteria = req.body.search || '';
+    console.log('getting stores', criteria)
+    Store.find({isDeleted: false, title: {$regex: criteria, $options: "i"}})
+    .then(resp => res.json(resp))
+    .catch(err => next(err));
+}
+
+exports.createNewAdmin = (req, res, next) => {
+    const password = req.body.password
+    bcrypt.hash(password, saltRounds, (err, hash) => {
+        Admin.create({email: req.body.email, password: hash})
+        .then(resp => res.sendStatus(200))
+        .catch(err => next(err));
+    }
+    )
 }
 
 exports.createNewAdmin = (req, res, next) => {

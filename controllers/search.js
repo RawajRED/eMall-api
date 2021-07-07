@@ -6,7 +6,7 @@ const Subcategory = require('../models/categorization/SubCategory');
 exports.searchInput = (req, res, next) => {
     const criteria = req.body.criteria;
     const promises = [];
-    promises.push(Store.find({title: {$regex: criteria, $options: "i"}}).limit(4).select('title').lean().exec())
+    promises.push(Store.find({title: {$regex: criteria, $options: "i"}}).limit(10).select('title logo').lean().exec())
     promises.push(Product.find({isDeleted : false, isStoreDeleted: false, $or: [
         {
             "title.en": {$regex: criteria, $options: "i"}
@@ -14,7 +14,7 @@ exports.searchInput = (req, res, next) => {
         {
             "title.ar": {$regex: criteria, $options: "i"}
         }
-    ]}).limit(4).select('title').lean().exec());
+    ]}).limit(10).select('title images').lean().exec());
     promises.push(Category.find({$or: [
         {
             "name.en": {$regex: criteria, $options: "i"}
@@ -22,7 +22,7 @@ exports.searchInput = (req, res, next) => {
         {
             "name.ar": {$regex: criteria, $options: "i"}
         }
-    ]}).limit(4).select('name').lean().exec())
+    ]}).limit(10).select('name image').lean().exec())
     promises.push(Subcategory.find({$or: [
         {
             "name.en": {$regex: criteria, $options: "i"}
@@ -30,7 +30,7 @@ exports.searchInput = (req, res, next) => {
         {
             "name.ar": {$regex: criteria, $options: "i"}
         }
-    ]}).limit(4).select('name').lean().exec())
+    ]}).limit(10).select('name image').lean().exec())
     Promise.all(promises)
     .then(resp => {
         res.json(resp);

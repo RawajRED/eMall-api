@@ -12,6 +12,8 @@ const SubCategory = require('../../models/categorization/SubCategory');
 
 
 const cron = require('node-cron');
+const { getVariables } = require('../../variables');
+const { sendMessage } = require('../../twilio');
 
 cron.schedule('59 23 * * *', () => {
     // StorePayment
@@ -335,8 +337,8 @@ exports.getViews = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
     const store = req.body.store;
-    StoreOrder.find({store: store._id})
-    .sort('status')
+    StoreOrder.find({store: store._id, status: req.params.status})
+    .sort({created_at: -1})
     .populate('orders.product')
     .then(resp => {
         res.json(resp)
@@ -431,41 +433,51 @@ exports.updateOrderStatus = (req, res, next) => {
 }
 
 exports.cancelOrder = (req, res, next) => {
-    console.log('bruh', req.body.order)
-    StoreOrder.findOneAndUpdate({_id: req.body.order}, {status: -1})
-    .then(() => {
-        console.log('getting your shit')
+    StoreOrder.findOneAndUpdate({_id: req.body.order}, {status: -1}, {new: true})
+    .populate('store')
+    .then(_SO => {
         Order.findOne({storeOrders: req.body.order})
+        .populate('client')
         .populate({path: 'storeOrders', populate: 'orders.product'})
         .then(order => {
-            order.storeOrders = order.storeOrders.filter(storeOrder => storeOrder._id.toString() !== order._id.toString());
+            let message = '';
+            const filter = order.storeOrders.filter(storeOrder => (storeOrder.store.toString() !== req.body.store._id.toString()) && (storeOrder.status > -1));
             
-            let total = 0;
-            order.storeOrders.map(storeOrder => {
+            let total = getVariables().shipping;
+            filter.forEach(storeOrder => {
                 storeOrder.orders.forEach(order => {
                     const product = order.product;
                     let price = product.price;
-                    console.log('price', order)
                     product.options.map(option => {
                         const pickedOption = order.options.filter(cartOption => cartOption.option.toString() === option._id.toString())[0];
                         const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
                         price += pick.extraPrice || 0;
                     });
-                    total += price * (1 - ((order.discount || 0))) * (1 - ((order.dealOfTheDay || 0) / 100));
+                    total += price * order.quantity * (1 - ((order.discount || 0))) * (1 - ((order.dealOfTheDay || 0) / 100));
                 })
             })
-            console.log('total is', total)
-            order.total -= total;
+            order.total = total;
+            message = order.client.languagePref === 0 ? 
+            `The store ${_SO.store?.title} has rejected your order, your new total is now ${total} EGP. Please check your current order from the "My Orders" tab`
+            :
+            `رفض المتجر ${_SO.store?.title} طلبك ، إجمالي المبلغ الجديد هو الآن ${total} جنيه مصري. يرجى التحقق من طلبك الحالي من خلال "طلباتي"`;
             if(checkArrayNotAll(order.storeOrders.map(ord => ord.status), 0)){
                 if(!checkArrayNotAll(order.storeOrders.map(ord => ord.status), -1)){
                     // ! CANCEL ENTIRE ORDER
+                    message = order.client.languagePref === 0 ?
+                    `The store ${_SO.store?.title} has rejected your order. Your order #${order.code} has been cancelled since there is nothing else to be delivered`:
+                    `رفض المتجر ${_SO.store?.title} طلبك. تم إلغاء طلبك رقم ${order.code} لأنه لا يوجد شيء آخر ليتم تسليمه`
                     order.status = -1;
                 } else {
                     order.status = 1;
                 }
             }
-            order.save();
-            res.sendStatus(200);
+            sendMessage(message, order.client.phone)
+            .then(() => {
+                res.sendStatus(200);
+                order.save();
+            })
+            .catch(err => next(err));
         })
         .catch(err => next(err));
     })
@@ -489,8 +501,8 @@ exports.getRevenueForOrder = (req, res, next) => {
                 const pick = option.options.filter(optionOption => optionOption._id.toString() === pickedOption.pick._id.toString())[0];
                 price += pick.extraPrice || 0;
             });
-            total += price;
-            discountedTotal += price * (1 - ((order.discount || 0))) * (1 - ((order.dealOfTheDay || 0) / 100));
+            total += price * order.quantity;
+            discountedTotal += price * order.quantity * (1 - ((order.discount || 0))) * (1 - ((order.dealOfTheDay || 0) / 100));
         })
         res.json({total: total.toFixed(2), discountedTotal: discountedTotal.toFixed(2)})
     })

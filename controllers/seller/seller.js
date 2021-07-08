@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
 
 exports.createSeller = (req, res, next) => {
-
     const password = req.body.password;
     const saltRounds = 10;
     bcrypt.hash(password, saltRounds)
@@ -18,8 +17,6 @@ exports.createSeller = (req, res, next) => {
         .then(sellers => res.json(sellers));
     })
 }
-
-
 
 exports.createStoreAndSellerEmail = (req, res, next) => {
     const store = {
@@ -79,13 +76,13 @@ exports.sellerSignInEmail = (req, res, next) => {
                     const store = seller.store;
                     delete seller.store;
                     return res.json({seller, store, accessToken, refreshToken, type: 'store'})
-                } else throw new Error();
+                } else throw next({status: 403, errors: [{msg: {en: `Incorrect email or password`, ar: 'بريد أو كلمة مرورغير صحيحة'} }]});
             })
-            .catch(err => next({status: 403, errors: [{msg: `Incorrect email or password` }]}))
+            .catch(err => next({status: 403, errors: [{msg: {en: `Incorrect email or password`, ar: 'بريد أو كلمة مرورغير صحيحة'} }]}))
         }
-        else next({status: 403, errors: [{msg: `Incorrect email or password` }]})
+        else next({status: 403, errors: [{msg: {en: `Incorrect email or password`, ar: 'بريد أو كلمة مرورغير صحيحة'} }]})
     })
-    .catch(err => next({status: 403, errors: [{msg: `Incorrect email or password` }]}))
+    .catch(err => next({status: 403, errors: [{msg: {en: `Incorrect email or password`, ar: 'بريد أو كلمة مرورغير صحيحة'} }]}))
 }
 
 exports.sellerLoginToken = (req, res, next) => {

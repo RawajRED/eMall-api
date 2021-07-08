@@ -35,6 +35,7 @@ const subcategoryRouter = require('./routes/categorization/subcategories')
 const adminRouter = require('./routes/admin/admin');
 const searchRouter = require('./routes/search');
 const adsRouter = require('./routes/advertisement');
+const generalRouter = require('./routes/general/general');
 
 // Connect to database URL
 
@@ -85,6 +86,7 @@ app.use('/api/store', storeRouter);
 app.use('/api/product', productRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/advertisement', adsRouter);
+app.use('/api/general', generalRouter);
 
 app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
 app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => res.json(req.files.map(file => file.Location)));

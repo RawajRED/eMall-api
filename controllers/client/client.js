@@ -10,7 +10,6 @@ const RefundRequest = require('../../models/orders/RefundRequest');
 const DealOfTheDay = require('../../models/other/DealOfTheDay');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const sendMail = require('../../sendgrid').sendMail;
 const { sendMessage } = require('../../twilio');
 const { getVariables } = require('../../variables');
 
@@ -136,12 +135,6 @@ exports.clientLoginPhone = (req, res, next) => {
                     }
                     else {
                         const otp = client.otp;
-                        // sendMail({
-                        //     mail: client.email,
-                        //     subject: 'Please Verify Your Email',
-                        //     text: `Verify your email with the code ${otp}`,
-                        //     html: `<p>Verify your email with the code <strong>${otp}</strong></p>`
-                        // })
                         sendMessage(`Your verification code is ${otp}`, phone)
                         .then(() => {
                             Client.updateOne({_id: client._id}, {otp})
@@ -659,10 +652,14 @@ exports.placeOrder = (req, res, next) => {
             })
             let total = subtotal + getVariables().shipping;
             StoreOrder.insertMany(arr)
-            .then(resp => {
+            .then(async resp => {
                 const storeOrders = resp.map(storeOrder => storeOrder._id);
                 cart.products = [];
                 cart.save();
+                let _client = await Client.findOne({_id: client});
+                sendMessage(_client.languagePref === 0 ? 
+                    `Your order with code #${code} has been successfully placed!\nTotal: ${total}\nExpect the order to arrive within 3 business days.` :
+                    `تم تقديم طلبك برمز #${code} بنجاح!\n الإجمالي: ${total}\n توقع وصول الطلب في غضون 3 أيام عمل.`, _client.phone);
                 Order.create({
                     storeOrders,
                     code,
@@ -795,8 +792,8 @@ exports.requestRefund = (req, res, next) => {
 /* -------------------------------------------------------------------------- */
 
 
-const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
-// const generateOtp = (number = 5) => '1234567890'.substr(0, number);
+// const generateOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
+const generateOtp = (number = 5) => '1234567890'.substr(0, number);
 
 const generateAlphaNumericOtp = (number = 5) => Array.from(Array(number).keys()).map(() => Math.floor(Math.random()*10)).join("");
 

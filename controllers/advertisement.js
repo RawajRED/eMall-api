@@ -3,7 +3,6 @@ const HomeAd = require('../models/other/HomeAd');
 const BannerAd = require('../models/other/BannerAd');
 const DealsOfTheDay = require('../models/other/DealOfTheDay');
 const Store = require('../models/seller/Store');
-const StorePage = require('../models/seller/StorePage');
 const Product = require('../models/seller/product/Product');
 const FeaturedProduct = require('../models/other/FeaturedProduct');
 const FeaturedStore = require('../models/other/FeaturedStore');

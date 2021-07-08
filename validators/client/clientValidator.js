@@ -63,7 +63,7 @@ exports.validateClientLoginPhone = [
     check('password')
         .exists().withMessage({en: 'Password is missing', ar: 'كلمة المرور مفقودة'}).bail()
         .isString()
-        .isLength({min: 8, max: 20}).withMessage({en: 'Password is too short (8 to 20 characters)', ar: 'كلمة المرور قصيرة جدًا (من 8 إلى 20 حرفًا)'}),
+        .isLength({min: 8, max: 20}).withMessage({en: 'Password is invalid (8 to 20 characters)', ar: 'كلمة المرور قصيرة جدًا (من 8 إلى 20 حرفًا)'}),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())

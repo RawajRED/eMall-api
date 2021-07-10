@@ -19,9 +19,28 @@ exports.validateAdminLoginEmail = [
             {
                 next({status: 422, errors: errors.array()});
             }
+            console.log('all clear')
         next();
     }
 ]
+
+// exports.adminValidateWithdrawal = [
+//     check('imageURL')
+//         .exists().withMessage('Please provide an image of the transaction').bail(),
+//     check('password')
+//         .exists().withMessage("Password is missing").bail()
+//         .isString()
+//         .isLength({min: 8, max: 20}),
+//     (req, res, next) => {
+//         const errors = validationResult(req);
+//         if (!errors.isEmpty())
+//             {
+//                 next({status: 422, errors: errors.array()});
+//             }
+//             console.log('all clear')
+//         next();
+//     }
+// ]
 
 exports.adminVerifyToken = (req, res, next) => {
     const token = req.get('token') || req.get('Authorization');

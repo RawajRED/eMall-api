@@ -659,7 +659,7 @@ exports.placeOrder = (req, res, next) => {
                 let _client = await Client.findOne({_id: client});
                 sendMessage(_client.languagePref === 0 ? 
                     `Your order with code #${code} has been successfully placed!\nTotal: ${total}\nExpect the order to arrive within 3 business days.` :
-                    `تم تقديم طلبك برمز #${code} بنجاح!\n الإجمالي: ${total}\n توقع وصول الطلب في غضون 3 أيام عمل.`, _client.phone);
+                    `تم تقديم طلبك بنجاح! \n#${code} \n الإجمالي: ${total}\n توقع وصول الطلب في غضون 3 أيام عمل.`, _client.phone);
                 Order.create({
                     storeOrders,
                     code,
@@ -673,7 +673,9 @@ exports.placeOrder = (req, res, next) => {
             })
             .catch(err => next(err));
         })
+        .catch(err => next(err));
     })
+    .catch(err => next(err));
 }
 /*
 ?   CANCEL ORDER
@@ -687,6 +689,7 @@ exports.cancelOrder = (req, res, next) => {
         .then(resp => {
             res.json(resp)
         })
+        .catch(err => next(err))
     })
     .catch(err => next(err))
 }
@@ -701,7 +704,8 @@ exports.getOrderProducts = (req, res, next) => {
     .then(resp => {
         // const products = resp.map(order => order.orders);
         res.json([].concat.apply([], resp))
-    });
+    })
+    .catch(err => next(err));
 }
 
 

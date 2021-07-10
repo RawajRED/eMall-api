@@ -27,18 +27,19 @@ exports.adminLoginEmail = (req, res, next) => {
             bcrypt.compare(req.body.password, admin.password, (err, result) => {
                 delete admin.password;
                 if(err)
-                    res.sendStatus(500);
+                    return next({status: 500, message: 'Something went wrong'});
                 if(result){
                     const accessToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '10h'});
                     const refreshToken = jwt.sign({admin}, process.env.SECRET_KEY_ADMIN, { expiresIn: '3d'});
                     res.json({admin, accessToken, refreshToken})
                 }
-                else res.sendStatus(404)})
+                else next({status: 404, message: 'Incorrect email or password'})
             }
-        else res.sendStatus(404)
+        )}
+        else next({status: 404, message: 'Incorrect email or password'})
     })
     .catch(err => {
-        res.sendStatus(404)
+        next({status: 404, message: 'Incorrect email or password'})
     })
 }
 
@@ -96,7 +97,11 @@ exports.getStoreData = (req, res, next) => {
         Seller.find({store: req.params.id})
         .select('name title email')
         .then(sellers => {
-            res.json({...resp._doc, sellers})
+            Product.find({store: req.params.id})
+            .select('title images')
+            .then(products => {
+                res.json({...resp._doc, sellers, products});
+            })
         })
     })
     .catch(err => next(err))

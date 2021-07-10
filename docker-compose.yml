@@ -4,5 +4,6 @@ services:
     image: 'redis'
   emall-api:
     build: .
+    restart: always
     ports:
       - "80:80"

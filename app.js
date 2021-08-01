@@ -89,7 +89,7 @@ app.use('/api/advertisement', adsRouter);
 app.use('/api/general', generalRouter);
 
 app.post('/api/upload', upload.single('photo'), (req, res) => res.json({location: req.file.Location}));
-app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => {console.log(res);res.json(req.files.map(file => file.Location))});
+app.post('/api/upload-multiple', upload.array('photos[]', 10), (req, res) => {req.files;res.json(req.files.map(file => file.Location))});
 
 app.post('/api/remove', async (req, res) => {
   const key = new URL(req.body.key).pathname.substr(1);

@@ -9,6 +9,7 @@ const Product = require('../../models/seller/product/Product');
 const WithdrawRequest = require('../../models/seller/WithdrawRequest');
 const Category = require('../../models/categorization/Category');
 const SubCategory = require('../../models/categorization/SubCategory');
+const Filter = require('../../models/categorization/Filter');
 
 
 const cron = require('node-cron');
@@ -637,6 +638,15 @@ exports.getStoreId = (req, res, next) => {
     .select('_id categories')
     .then( store => {
         next({status:200,store:store});
+    })
+    .catch(err => next({status: 404, message: err}));
+}
+
+exports.getFilter = (req, res, next) => {
+    Filter.findOne({$or:[{'name.en': req.body.filter},{'name.ar': req.body.filter}]})
+    .select('_id')
+    .then( filter => {
+        next({status:200,filter:filter});
     })
     .catch(err => next({status: 404, message: err}));
 }

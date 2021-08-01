@@ -10,6 +10,7 @@ router.get('/most-popular', store.getMostPopularStores);
 router.post('/store_ID', store.getStoreId);
 router.post('/category_ID', store.getCategory);
 router.post('/subcategory_ID', store.getSubCategory);
+router.post('/filter_ID', store.getFilter);
 
 router.post('/find-by-category', cacheByValue('store', 'category', true, 60), store.getStoreProductsByCategory);
 router.post('/find-by-category/full', store.getStoreProductsByCategoryFull);

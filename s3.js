@@ -24,11 +24,7 @@ exports.upload = multer({
       metadata: (req, file, cb)=> {
         cb(null, {fieldName: file.fieldname});
       },
-    }),
-    onError : function(err, next) {
-      console.log('error', err);
-      next(err);
-    }
+    })
   })
 
 exports.uploadThumnail = multer({

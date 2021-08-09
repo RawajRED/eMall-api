@@ -635,7 +635,7 @@ exports.getSubCategory = (req, res, next) => {
 
 exports.getStoreId = (req, res, next) => {
     Store.findOne({title: req.body.store})
-    .select('_id categories')
+    .select('_id categories subcategories')
     .then( store => {
         next({status:200,store:store});
     })
